@@ -67,18 +67,21 @@
                 <div class="progress-circle w-6 h-6 mr-2" :class="{ hidden: !isLoading }"></div>
                 <div>
                     <div class="relative">
-                        <input type="text" id="gpt-input" v-model="inputText" placeholder="What would you like to create?" class="input input-bordered w-full max-w-xs pr-10" @keypress.enter="sendInput()" />
-                        <button id="send-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" :class="{ hidden: !inputText }" @click="sendInput()">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                            </svg>
+                        <input type="text" id="gpt-input" v-model="inputText" :placeholder="lastText || 'What would you like to create?'" class="input input-bordered w-full max-w-xs pr-10" @keypress.enter="sendInput()" />
+                        <button id="stop-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-if="isLoading" @click="abortController?.abort()">
+                            <i class="fas fa-stop"></i>
                         </button>
-                    </div>
+                        <button id="send-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-else-if="inputText" @click="sendInput()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        <button id="resend-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-else-if="lastText" @click="sendInput()">
+                            <i class="fas fa-redo-alt"></i>
+                        </button>
+                        </div>
                 </div>
             </div>
             <div id="suggestion-bubbles" class="mt-2">
-                <span v-for="suggestion in suggestions" :key="suggestion" class="suggestion-bubble" @click="selectSuggestion(suggestion)">{{ suggestion }}</span>
+                <span v-for="suggestion in suggestions" :key="suggestion" class="suggestion-bubble" @click="inputText = suggestion">{{ suggestion }}</span>
             </div>
         </div>
     </div>

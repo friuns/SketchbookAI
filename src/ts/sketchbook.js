@@ -48,3 +48,9 @@ globalThis.BoxCollider = BoxCollider;
 
 import * as Utils from './core/FunctionLibrary';
 globalThis.Utils = Utils;
+
+import { EntityType } from './enums/EntityType';
+globalThis.EntityType = EntityType;
+
+import { VectorSpringSimulator } from './physics/spring_simulation/VectorSpringSimulator';
+globalThis.VectorSpringSimulator = VectorSpringSimulator;

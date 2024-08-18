@@ -1,3 +1,4 @@
 .vscode
 node_modules
 /localSettings.js
+/build/sketchbook.min.js

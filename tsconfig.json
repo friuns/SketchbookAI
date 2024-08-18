@@ -3,12 +3,13 @@
         "src/**/*"
 , "src/ts/vehicles/test.js", "build/types/vehicles/index.js", "src/index.js"    ],
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "amd",
         "target": "es5",
         "sourceMap": true,
         "moduleResolution": "node",
         "declaration": true,
-        "declarationDir": "build/types",
+        "declarationMap": false,
+        "outFile": "./build/types/index.d.ts",
         "baseUrl": ".",
         "paths": {
             "cannon" : ["src/lib/cannon/cannon"]
