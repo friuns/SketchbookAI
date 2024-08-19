@@ -10,8 +10,12 @@ let chat = new Vue({
         lastText: '',
         messages: [],        
         isLoading: false,
-        snapshots: [],
         suggestions: ['Add a red cube', 'Create a bouncing ball', 'Generate a 3D tree'],
+        async undoLastAction() {
+            
+            this.messages.pop();
+            this.inputText = this.messages[this.messages.length - 1]?.user || '';
+        },
         async sendInput() {
             
             let playerLookPoint = new THREE.Vector3();
@@ -47,7 +51,7 @@ let chat = new Vue({
                 (0,eval)(content.replace(/\b(const|let)\b/g, 'var'));
                 code = content;
                 if (this.messages[this.messages.length - 1] != this.lastText) {
-                    this.messages.push(this.lastText);
+                    this.messages.push({user: this.lastText, ai: content});
                 }
             } catch (e) {
 

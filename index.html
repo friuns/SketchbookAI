@@ -65,8 +65,11 @@
             <div class="w-full max-w-xs relative" >
                 <div id="floating-code" class="floating-code" style="pointer-events: none;" ></div>
                 <div class="progress-circle w-6 h-6 mr-2" :class="{ hidden: !isLoading }"></div>
-                <div>
-                    <div class="relative">
+                <div class="flex items-center">
+                    <button id="undo-button" class="bg-transparent border-none mr-2" @click="undoLastAction()">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <div class="relative flex-grow">
                         <input type="text" id="gpt-input" v-model="inputText" :placeholder="lastText || 'What would you like to create?'" class="input input-bordered w-full max-w-xs pr-10" @keypress.enter="sendInput()" />
                         <button id="stop-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-if="isLoading" @click="abortController?.abort()">
                             <i class="fas fa-stop"></i>
@@ -77,7 +80,7 @@
                         <button id="resend-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-else-if="lastText" @click="sendInput()">
                             <i class="fas fa-redo-alt"></i>
                         </button>
-                        </div>
+                    </div>
                 </div>
             </div>
             <div id="suggestion-bubbles" class="mt-2">
@@ -87,7 +90,7 @@
     </div>
     <script src="build/sketchbook.min.js"></script>
     <script src="src/utils.js"></script>
-    <script src="objectProxy.js"></script>
+    <script src="test2.js"></script>
     <script src="src/stable3d.js"></script>
     <script src="src/settings.js"></script>
     <script src="src/gptapi.js"></script>
