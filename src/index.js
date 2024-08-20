@@ -132,17 +132,36 @@ function Eval(...content) {
     if(content.includes("world.update = "))
         throw new Error("world.update = function(){} is not allowed");
     
-    var code = content.map(c => c
+    var code = "(async () => {"+content.map(c => c
         .substring(c.indexOf('player.takeControl();'))
         .replace(/\blet\b/g, 'var')
         .replace(/\bconst\b/g, 'var'))
         .join('\n')
+        + "})();";
         //+ ";debugger;";
     console.log(code);
     (0, eval)(code);
     chat.params.code = code;
 
 }
+
+
+if (!navigator.serviceWorker && !window.location.hostname.startsWith('192')) {
+    alert("Error: Service worker is not supported");
+  } else {
+    (async () => {
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          await registration.unregister();
+        }
+        await navigator.serviceWorker.register('service-worker.mjs');
+      } catch (error) {
+        console.error("Service worker registration failed:", error);
+      }
+    })();
+  }
+  
 
 // Assuming you have a dat.GUI instance called 'gui'
 world.gui.add({ clear: function() { 

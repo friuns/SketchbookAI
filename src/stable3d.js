@@ -1,4 +1,18 @@
-
+const input = document.createElement('input');
+    input.type = 'text';
+    document.body.appendChild(input);
+    
+    const downloadButton = document.createElement('button');
+    downloadButton.textContent = 'Generate 3D Model';
+    document.body.appendChild(downloadButton);
+    
+    downloadButton.addEventListener('click', async () => {
+        const v = input.value || 'trump';
+        input.value = '';
+        const glbUrl = await GenerateGLB(v);
+        if (glbUrl) loadModel(glbUrl);
+        else console.error('Failed to generate GLB URL');
+    });
 
 
 async function GenerateGLB(input) {
