@@ -25,15 +25,27 @@
                     files: [{ name: fileName, buffer: arrayBuffer }]
                 });
 
-                // Wait a bit for the service worker to process the file
                 await new Promise(resolve => setTimeout(resolve, 100));
 
                 const raycaster = new THREE.Raycaster();
                 raycaster.setFromCamera(mouse, world.camera);
                 const intersects = raycaster.intersectObjects(world.graphicsWorld.children, true);
                 const intersectionPoint = intersects[0].point;
-                Eval(chat.params.code, 'var model = await loadModel({ glbUrl: "' + fileName + '", pos: ' + JSON.stringify(intersectionPoint) + ' })');
                 
+                
+                const gltf = await new Promise((resolve, reject) => {
+                    new GLTFLoader().load(fileName, (gltf) => resolve(gltf), undefined, (error) => reject(error));
+                });
+                const animations = gltf.animations;
+                let animationsCode = '';
+                const modelName = fileName.split('.').slice(0, -1).join('_').replace(/[^a-zA-Z0-9_]/g, '');
+                if (animations && animations.length > 0) {
+                    animationsCode += `${modelName}.mixer = new THREE.AnimationMixer(${modelName}.scene);\n`;
+                    animations.forEach((clip, index) => {
+                        animationsCode += `${modelName}["${clip.name}"] = ${modelName}.mixer.clipAction(${modelName}.animations.find(a => a.name === "${clip.name}"));\n`;
+                    });
+                }
+                Eval(chat.params.code, `let ${modelName} = await loadModel({ glbUrl: "${fileName}", pos: ${JSON.stringify(intersectionPoint)} });\n${animationsCode}`);
 
             };
             reader.readAsArrayBuffer(file);

@@ -33,8 +33,8 @@ let chat = {
         Save();
         player.takeControl();
         if (!this.params.code)
-            this.Clear();
-
+            await this.Clear();
+        
         Eval(this.params.code);
         vue.$watch(() => this.params.lastText, (newValue) => {
             document.title = newValue;
@@ -107,6 +107,7 @@ let chat = {
             let lineNumber = e.lineNumber - err.lineNumber + 3;
             console.error("Error executing code:", e, lineNumber);
             Eval(this.params.code);
+            this.lastError = e.message;
 
 
         } finally {
@@ -158,7 +159,7 @@ async function Eval(...contentArray) {
     if(content.includes("world.update = "))
         throw new Error("direct assign world.update = function(){} is not allowed, use extendMethod");
     var code = "(async () => {\n" + content
-        .substring(content.indexOf('player.takeControl();'))
+        .replace(/^[\s\S]*?await world\.initialize\(\);/, '')
         .replace(/\b(let|const)\s+(\w+)\s*=/g, 'var $2 = globalThis.$2 =')        
         + "\n})();"
         //+ ";debugger;"
