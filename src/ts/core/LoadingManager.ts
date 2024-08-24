@@ -81,7 +81,7 @@ export class LoadingManager
 		{
 			this.onFinishedCallback = () =>
 			{
-				this.world.update(1, 1);
+				//this.world.update(1, 1);
 	
 				Swal.fire({
 					title: scenario.descriptionTitle,

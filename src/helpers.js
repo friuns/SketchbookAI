@@ -1,10 +1,4 @@
-function loadGLB({ glbUrl }) {
-    return new Promise((resolve, reject) => {
-        new GLTFLoader().load(glbUrl, (gltf) => {
-            resolve(gltf);
-        }, undefined, reject);
-    });
-}
+
 function extendMethod(object, methodName, extension) {
     const originalMethod = object[methodName];
     object[methodName] = function(...args) {

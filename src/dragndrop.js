@@ -94,32 +94,41 @@ async function GetSpawnGLBCode(fileName, intersectionPoint) {
         new GLTFLoader().load(fileName, (gltf) => resolve(gltf), undefined, (error) => reject(error));
     });
     const animations = gltf.animations;
+    let isSkinnedMesh = false;
+    gltf.scene.traverse(a => isSkinnedMesh ||= a instanceof THREE.SkinnedMesh);
     let animationsCode = '';
     const modelName = fileName.split('.').slice(0, -1).join('_').replace(/[^a-zA-Z0-9_]/g, '');
     if (animations && animations.length > 0) {
-        animationsCode += `gltf.mixer = new THREE.AnimationMixer(gltf.scene);\n`;
+        animationsCode = '                // CRITICAL: Uncomment and assign correct CAnims to each animation immediately!';
         animations.forEach((clip, index) => {
-            animationsCode += `gltf["${clip.name}"] = gltf.mixer.clipAction(gltf.animations.find(a => a.name === "${clip.name}"));\n`;
+            animationsCode += `
+                //if (a.name === "${clip.name}") a.name = `;
         });
     }
-    return `
-let ${modelName} = await new Promise((resolve, reject) => { 
+    let code = `
+let ${modelName}Model = await new Promise((resolve, reject) => { 
     new GLTFLoader().load("${fileName}", 
-        gltf => { 
-            ${animationsCode}
-            resolve(gltf); 
-        }, 
-        undefined, 
-        reject 
-    ); 
+        gltf => {
+            gltf.animations.forEach(a => {
+${animationsCode}
+            });
+            resolve(gltf);
+        });
 });
+`;
+    if (isSkinnedMesh) code += `
+let ${modelName} = new Character(${modelName}Model);
+${modelName}.setPosition(${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)}, ${intersectionPoint.z.toFixed(2)});
+world.add(${modelName});
+`;
 
-${modelName}.scene.position.copy(${VectorToString(intersectionPoint)});
-world.graphicsWorld.add(${modelName}.scene);
+    else code += `
+${modelName}Model.scene.position.copy(${VectorToString(intersectionPoint)});
+world.graphicsWorld.add(${modelName}Model.scene);
+`;
 
-    `;
-    //return `\nlet ${modelName} = await ${loadGLB.name}({ glbUrl: "${fileName}"});\n${animationsCode}\n${modelName}.scene.position.copy(${VectorToString(intersectionPoint)});\n\n`;
 
+    return code;
 }
 function VectorToString(intersectionPoint) {
     return JSON.stringify(intersectionPoint, (key, value) => typeof value === 'number' ? Number(value.toFixed(2)) : value);

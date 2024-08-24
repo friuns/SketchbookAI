@@ -193,7 +193,7 @@ export class World
 
 	// Update
 	// Handles all logic updates.
-	public update(timeStep: number, unscaledTimeStep: number): void
+	protected update(timeStep: number, unscaledTimeStep: number): void
 	{
 		this.updatePhysics(timeStep);
 

@@ -36,14 +36,12 @@ let chat = {
         this.variant = structuredClone(variantTemplate);
         document.addEventListener('pointerlockchange', () => this.isCursorLocked = !!document.pointerLockElement);
         globalThis.world = new World();
-        await world.initialize('build/assets/world.glb');
-        globalThis.player = world.characters[0];
+        await world.initialize('build/assets/world.glb');        
         Save();
-        player.takeControl();
         if (!this.variant.content)
             await this.Clear();
         
-        Eval(this.variant.content);
+        Eval(this.variant.files[0].content);
         vue.$watch(() => this.params.lastText, (newValue) => {
             document.title = newValue;
         });
@@ -78,7 +76,8 @@ let chat = {
                 'build/types/characters/Character.d.ts',
                 'build/types/interfaces/ICharacterAI.d.ts',
                 'build/types/interfaces/ICollider.d.ts',
-                'src/ts/enums/CharacterAnimations.d.ts',
+                'build/types/vehicles/Car.d.ts',
+                'src/ts/enums/CharacterAnimations.ts',
                 'src/ts/characters/character_ai/FollowTarget.ts',
                 'src/helpers.js',                
             ];
@@ -87,7 +86,7 @@ let chat = {
                 fetch(path).then(response => response.text()).catch(e => {
                     alert("Error fetching file: " + e + " " + path);
                     return '';
-                }).then(content => ({ name: path.split('/').pop(), content }))
+                }).then(content => ({ name: path.split('/').pop(), content: content.replace(/^.*\bprivate\b.*$/gm, '') }))
             );
             
             const filesMessage = (await Promise.all(fetchPromises)).map(file => `${file.name} file for reference:\`\`\`javascript\n${file.content}\n\`\`\``).join('\n\n');

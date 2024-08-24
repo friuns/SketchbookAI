@@ -34,14 +34,15 @@ async function Eval(...contentArray)
     chat.variant.lastError = '';
     
     var content = contentArray.join('\n');
-    if(content.includes("world.update = "))
-        throw new Error("direct assign world.update = function(){} is not allowed, use extendMethod");
+    
     var code = "(async () => {\n" + content
         .replace(/^.*(?:new World\(|world\.initialize).*$\n?/gm, '')
         .replace(/\b(let|const)\s+(\w+)\s*=/g, 'var $2 = globalThis.$2 =')        
         + "\n})();"
         //+ ";debugger;"
     console.log(code);
+    if(content.includes("world.update = "))
+        throw new Error("direct assign world.update = function(){} is not allowed, use extendMethod");
     lastEvalCode = code;
     (0, eval)(code);
     let startTime = Date.now();

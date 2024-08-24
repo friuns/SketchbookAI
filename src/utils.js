@@ -106,18 +106,21 @@ function Save() {
         graphicsWorld: world.graphicsWorld.children.slice(),
         physicsWorld: world.physicsWorld.bodies.slice(),
         updatables:world.updatables.slice(),
-        characters:world.characters.slice()
+        characters:world.characters.slice(),
+        vehicles:world.vehicles.slice()
     };
 }
-function Load() {
+function Load() {    
     world.graphicsWorld.children.length = 0;
     world.graphicsWorld.children.push(...globalThis.snapshot.graphicsWorld);
-    world.physicsWorld.bodies.length = 0;
-    world.physicsWorld.bodies.push(...globalThis.snapshot.physicsWorld);
+    world.physicsWorld.bodies.forEach(body => world.physicsWorld.remove(body));
+    globalThis.snapshot.physicsWorld.forEach(body => world.physicsWorld.addBody(body));
     world.updatables.length = 0;
     world.updatables.push(...globalThis.snapshot.updatables);
     world.characters.length = 0;
     world.characters.push(...globalThis.snapshot.characters);
+    world.vehicles.length = 0;
+    world.vehicles.push(...globalThis.snapshot.vehicles);
 }
 
 function loadModelWithPhysics({ glbUrl, pos, mass = 1 }) {
@@ -261,6 +264,8 @@ THREE.AnimationClip.findByName = (clipArray, name) => {
 };
 
 function getSimilarityScore(str1, str2) {
+    if(!str1||!str2)
+        return 0;
     function levenshteinDistance(a, b) {
         const matrix = Array(a.length + 1).fill(null).map(() =>
             Array(b.length + 1).fill(null));

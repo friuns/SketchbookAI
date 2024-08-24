@@ -54,6 +54,9 @@ globalThis.Utils = Utils;
 import { EntityType } from './enums/EntityType';
 globalThis.EntityType = EntityType;
 
+import { CollisionGroups } from './enums/CollisionGroups';
+globalThis.CollisionGroups = CollisionGroups;
+
 import { VectorSpringSimulator } from './physics/spring_simulation/VectorSpringSimulator';
 globalThis.VectorSpringSimulator = VectorSpringSimulator;
 
