@@ -1,7 +1,7 @@
+(async function(){
 
-
-globalThis.world = new World('build/assets/world.glb');
-await world.initialize();
+globalThis.world = new World();
+await world.initialize('build/assets/world.glb');
 
 GLTFLoader.prototype.loadAsync = async function (glbUrl) {
     return new Promise((resolve, reject) => {
@@ -28,111 +28,60 @@ player.setPosition(-2.82, 14.8, -2.88);
 world.add(player);
 player.takeControl();
 
-let carModel = await loader.loadAsync('build/assets/car.glb');
 
-/*
-- vehicle
-  - seats
-    - seat_1
-    - seat_3
-    - seat_2
-    - seat_4
-  - entrances
-    - entrance_1
-    - entrance_3
-    - entrance_4
-    - entrance_2
-  - objects
-    - Empty
-    - Cube006
-    - Cube002
-    - Sphere
-    - Sphere001
-    - Sphere002
-    - Sphere004
-    - Sphere007
-    - Sphere003
-    - Sphere005
-    - Sphere006
-    - Sphere008
-    - Sphere009
-    - Sphere010
-    - Sphere011
-  - body
-    - Steer_parent
-      - Steering_wheel
-    - door_1
-    - door_2
-    - door_3
-    - door_4
-  - wheels
-    - wheel_fl
-    - Cylinder001
-    - wheel_fr
-    - wheel
-*/
 
-/* CRITICAL: Uncomment and assign correct objects to seats and wheels immediately!
-carModel.initCar = function (car,carModel) {
-    
-    car.setPosition(-2.37, 14.86, -4.03);
+let carModel = new THREE.Group();
 
-    // Set up seats
-    car.seats = [
-        new VehicleSeat(car, carModel.scene., carModel),
-        new VehicleSeat(car, carModel.scene., carModel),
-        new VehicleSeat(car, carModel.scene., carModel),
-        new VehicleSeat(car, carModel.scene., carModel)
-    ];
+// Create seats
+const seatGeometry = new THREE.BoxGeometry(0.5, 0.12, 0.54);
+const seatMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+const seat1 = new THREE.Mesh(seatGeometry, seatMaterial);
+seat1.position.set(0.25, 0.06, 0.09);
+carModel.add(seat1);
 
-    // Connect seats
-    car.seats[0].connectedSeats = [car.seats[1]];
-    car.seats[1].connectedSeats = [car.seats[0]];
-    car.seats[2].connectedSeats = [car.seats[3]];
-    car.seats[3].connectedSeats = [car.seats[2]];
+const seat2 = seat1.clone();
+seat2.position.set(-0.25, 0.06, 0.09);
+carModel.add(seat2);
 
-    // Set up wheels
-    car.wheels = [
-        new Wheel(carModel.scene.),
-        new Wheel(carModel.scene.),
-        new Wheel(carModel.scene.),
-        new Wheel(carModel.scene.),
-    ];
+const seat3 = seat1.clone();
+seat3.position.set(0.25, 0.06, -0.45);
+carModel.add(seat3);
 
-    // Set wheel properties
-    car.wheels[0].steering = true;
-    car.wheels[0].drive = 'fwd';
-    car.wheels[1].steering = true;
-    car.wheels[1].drive = 'fwd';
-    car.wheels[2].drive = 'rwd';
-    car.wheels[3].drive = 'rwd';
+const seat4 = seat1.clone();
+seat4.position.set(-0.25, 0.06, -0.45);
+carModel.add(seat4);
 
-    // Set up camera
-    car.camera = car.getObjectByName('Empty');
+// Create body
+const bodyGeometry = new THREE.BoxGeometry(1.28, 1.06, 2.49);
+const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0xA52A2A });
+const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+body.position.set(0, 0.40, 0.14);
+carModel.add(body);
 
-    // Set up collision
-    const bodyShape = new CANNON.Box(new CANNON.Vec3(.5, 0.2, 1));
-    bodyShape.collisionFilterMask = ~CollisionGroups.TrimeshColliders;
-    car.collision.addShape(bodyShape);
+// Create wheels
+const wheelGeometry = new THREE.CylinderGeometry(0.235, 0.235, 0.15, 32);
+const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const wheel1 = new THREE.Mesh(wheelGeometry, wheelMaterial);
+wheel1.rotation.z = Math.PI / 2;
+wheel1.position.set(1.01, -0.25, 1.73);
+carModel.add(wheel1);
 
-    const sphereShape = new CANNON.Sphere(0.5);
-    sphereShape.collisionFilterGroup = CollisionGroups.TrimeshColliders;
-    car.collision.addShape(sphereShape, new CANNON.Vec3(0, 0, 1.5));
+const wheel2 = wheel1.clone();
+wheel2.position.set(-1.01, -0.25, 1.73);
+carModel.add(wheel2);
 
-    // Set up materials
-    car.traverse((child) => {
-        if (child.isMesh) {
-            Utils.setupMeshProperties(child);
+const wheel3 = wheel1.clone();
+wheel3.position.set(1.01, -0.25, -1.57);
+carModel.add(wheel3);
 
-            if (child.material !== undefined) {
-                car.materials.push(child.material);
-            }
-        }
-    });
-}
-*/
-let car = new Car(carModel);
+const wheel4 = wheel1.clone();
+wheel4.position.set(-1.01, -0.25, -1.57);
+carModel.add(wheel4);
 
-car.setPosition(-2.37, 14.86, -4.03);
-world.add(car);
+// Set car position
+carModel.position.set(-2.82, 14.8, -2.88);
 
+// Add car to the world
+world.graphicsWorld.add(carModel);
+
+})();

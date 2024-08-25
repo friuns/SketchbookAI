@@ -34,13 +34,13 @@ let chat = {
 
     async init() {
         document.addEventListener('pointerlockchange', () => this.isCursorLocked = !!document.pointerLockElement);
-        globalThis.world = new World();
-        await world.initialize('build/assets/world.glb');        
+        //globalThis.world = new World();
+        //await world.initialize('build/assets/world.glb');        
         Save();
         if (!this.variant.content)
             await this.Clear();
         
-        Eval(this.variant.files[0].content);
+        //Eval(this.variant.files[0].content);
         vue.$watch(() => this.params.lastText, (newValue) => {
             document.title = newValue;
         });

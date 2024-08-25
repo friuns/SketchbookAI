@@ -353,3 +353,35 @@ function AutoScale(gltf, approximateScaleInMeters = 5) {
     model.scale.setScalar(scaleFactor);
 }
 
+function Object3DToHierarchy(gltf) {
+    function buildHierarchy(object, indent = '', parentMatrix = new THREE.Matrix4()) {
+        const currentMatrix = new THREE.Matrix4().multiplyMatrices(parentMatrix, object.matrix);
+        
+        const boundingBox = new THREE.Box3().setFromObject(object);
+        const center = boundingBox.getCenter(new THREE.Vector3());
+        const size = boundingBox.getSize(new THREE.Vector3());
+        
+        center.applyMatrix4(currentMatrix);
+        
+        let result = `${indent}${object.name}`;
+        
+        result += ` | Center: (${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)})`;
+        if (size.x > 0 || size.y > 0 || size.z > 0) {
+            result += `, Size: (${size.x.toFixed(2)}, ${size.y.toFixed(2)}, ${size.z.toFixed(2)})`;
+        }
+        
+        result += '\n';
+        
+        if (object.children && object.children.length > 0) {
+            indent += '  ';
+            object.children.forEach(child => {
+                result += buildHierarchy(child, indent, currentMatrix);
+            });
+        }
+        
+        return result;
+    }
+
+    let rootObject = gltf.scene;
+    return buildHierarchy(rootObject);
+}
