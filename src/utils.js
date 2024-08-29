@@ -108,7 +108,7 @@ function SaveReset() {
         updatables:world.updatables.slice(),
         characters:world.characters.slice(),
         vehicles:world.vehicles.slice(),
-        player:player
+//        player:player
     };
 }
 function Reset() {    
@@ -123,7 +123,7 @@ function Reset() {
     world.vehicles.length = 0;
     world.vehicles.push(...snapshot.vehicles);
     world.timeScaleTarget=1;
-    globalThis.player = snapshot.player;    
+  //  globalThis.player = snapshot.player;    
 }
 
 
@@ -265,30 +265,20 @@ function getSimilarityScore(str1, str2) {
     return (1 - distance / maxLen);
 }
 
-(function () {
-
+(function GLTFLoader_Load() {
     const gltfCache = new Map();
-
-    // Now, let's override the GLTFLoader.prototype.load function
-    const originalLoad2 = GLTFLoader.prototype.load;
+    const originalLoa2 = GLTFLoader.prototype.load;
     GLTFLoader.prototype.load = function (url, onLoad, onProgress, onError) {
-        // Check if the model is already in the cache
         if (gltfCache.has(url)) {
             const cachedModel = gltfCache.get(url);
-            // Clone the cached model to avoid modifying the original
-            
             const clonedModel = {...cachedModel, scene: SkeletonUtils.SkeletonUtils.clone(cachedModel.scene)};
-            // Call the onLoad callback with the cloned model
             if (onLoad) onLoad(clonedModel);
             return;
         }
 
-        // If not in cache, use the original load method
-        originalLoad2.call(this, url,
+        originalLoa2.call(this, url,
             (gltf) => {
-                // Store the loaded model in the cache
                 gltfCache.set(url, gltf);
-                // Call the original onLoad callback
                 if (onLoad) onLoad({...gltf, scene: SkeletonUtils.SkeletonUtils.clone(gltf.scene)});
             },
             onProgress,
@@ -299,15 +289,12 @@ function getSimilarityScore(str1, str2) {
 
 THREE.Cache.enabled=true;
 
-(function () {
-    // Override GLTFLoader.prototype.load to handle fallback
+(function GLTFLoader_Load() {
     const originalLoad = GLTFLoader.prototype.load;
     GLTFLoader.prototype.load = function (url, onLoad, onProgress, onError) {
-        originalLoad.call(this, url, onLoad, onProgress, (error) => {
-            console.warn(`Failed to load ${url}, attempting to load fallback.`);
+        originalLoad.call(this, url, onLoad, onProgress, (error) => {            
             originalLoad.call(this, 'notfound.glb', onLoad, onProgress, onError);
-
-            // Show picker for GLB file
+            let variant = chat.currentVariant;
             const fileName = url.split('/').pop().split('.')[0];
             picker.openModelPicker(fileName, async (downloadUrl) => {
                 const response = await fetch(downloadUrl);
@@ -317,7 +304,7 @@ THREE.Cache.enabled=true;
                     files: [{ name: url, buffer: arrayBuffer }]
                 });
                 await new Promise(resolve => setTimeout(resolve, 100));
-                chat.switchVariant(chat.currentVariant);
+                chat.switchVariant(variant);
             });
         });
     };
@@ -347,7 +334,6 @@ function AutoScale({ gltfScene, approximateScaleInMeters = 5}) {
     // Apply the calculated scale to the model
     model.scale.setScalar(scaleFactor);
 
-    world.render(world);
 }
 
 

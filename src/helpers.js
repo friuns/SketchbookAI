@@ -192,9 +192,36 @@ function loadModelWithPhysics({ glbUrl, pos, mass = 1 }) {
         });
     });
 }
-THREE.Object3D.prototype.setParent = function (child) {
-    const worldScale = child.getWorldScale(new THREE.Vector3());
-  
+THREE.Object3D.prototype.addWithPreservedScale = function (child) {
+    child.updateWorldMatrix(true, true);
+    const childWorldScale = child.getWorldScale();
+    const parentWorldScale = this.getWorldScale();
     this.add(child);
-    child.scale.copy(worldScale.divide(this.getWorldScale(new THREE.Vector3())));
+    child.scale.copy(childWorldScale.divide(parentWorldScale));
+    world.render(world);
+
 };
+function expose(obj) {
+    const folder = world.gui.addFolder(obj.name);
+    const storageKey = `${obj.name}_transform`;
+    const savedValues = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+    ['position', 'rotation', 'scale'].forEach(prop => {
+        ['x', 'y', 'z'].forEach(axis => {
+            const name = `${prop.charAt(0).toUpperCase() + prop.slice(1)} ${axis.toUpperCase()}`;
+            const controller = folder.add(obj[prop], axis, -10.0, 10.0).name(name);
+            
+            if (savedValues[name] !== undefined) {
+                obj[prop][axis] = savedValues[name];
+                controller.updateDisplay();
+            }
+
+            controller.onChange(value => {
+                savedValues[name] = value;
+                localStorage.setItem(storageKey, JSON.stringify(savedValues));
+            });
+        });
+    });
+
+    folder.open();
+}

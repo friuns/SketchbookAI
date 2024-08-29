@@ -191,6 +191,7 @@ export class World
 				this.render(this);
 			}, 1000 / 60); // 20 FPS
 		};
+		globalThis.SaveReset?.();
 		animate();
 	}
 
