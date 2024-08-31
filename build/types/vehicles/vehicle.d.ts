@@ -48,6 +48,7 @@ export declare abstract class Vehicle extends THREE.Object3D implements IWorldEn
     setBrake(brakeForce: number, driveFilter?: string): void;
     addToWorld(world: World): void;
     removeFromWorld(world: World): void;
-    readVehicleData(gltf: any): void;
+    InitVehicle(gltf: any): void;
+    readVehicleData(gltf: any): boolean;
     private connectSeats;
 }

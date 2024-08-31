@@ -152,17 +152,18 @@ function SetPivotCenter(gltf) {
 
 
 class BaseObject extends THREE.Object3D {
-    constructor(model) {
+    constructor(model, isStatic = false) {
         super();
-        expose(model,model.name);
+        expose(model, model.name);
         const bbox = new THREE.Box3().setFromObject(model);
         const size = bbox.getSize(new THREE.Vector3()).multiplyScalar(0.5);
         const center = new THREE.Vector3();
         bbox.getCenter(center);
         model.position.copy(center.negate());
         this.add(model);
+        
         this.body = new CANNON.Body({
-            mass: 1,
+            mass: isStatic ? 0 : 1, // Set mass to 0 for static objects
             position: Utils.cannonVector(center),
             shape: new CANNON.Box(new CANNON.Vec3(size.x, size.y, size.z)),
             material: new CANNON.Material('baseObjectMaterial')

@@ -92,4 +92,9 @@ globalThis.SkeletonUtils = SkeletonUtils;
 import Swal from 'sweetalert2';
 globalThis.Swal = Swal.mixin({
     toast: true,
-});;
+    onOpen: (toast) => {
+        if (!toast.classList.contains('swal2-toast')) {
+            document.exitPointerLock();
+        }
+    }
+});

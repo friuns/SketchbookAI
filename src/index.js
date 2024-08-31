@@ -71,6 +71,28 @@ let chat = {
             await new Promise(resolve => setTimeout(resolve, 30)); // Adjust the delay as needed for typing effect
         }
     },
+    UploadFile(){
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.glb,.js,image/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                const dropEvent = new DragEvent('drop', {
+                    dataTransfer: dataTransfer
+                });
+                document.body.dispatchEvent(dropEvent);
+            }
+            document.body.removeChild(input);
+        });
+
+        input.click();
+    },
     onClickError(){
         this.inputText = this.params.lastText + ' \nPrevious attempt Error: ' + this.variant.lastError + ", do not make it again!";
     },
@@ -132,7 +154,7 @@ let chat = {
             await Promise.all([1,2,3,4,5].map(async (i) => {
                 const response = await getChatGPTResponse({
                     messages: [
-                        { role: "system", content: settings.rules + `\nto spawn object use: ${playerLookPoint}` },
+                        { role: "system", content: settings.rules + `\nWhen user says: spawn or add object, then spawn it at near player position: ${playerLookPoint}` },
                         { role: "system", content: filesMessage },
                         { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`javascript\n${code}\n\`\`\`\n\nUpdate code below, Rewrite JavaScript code that will; ${this.params.lastText}` }
                     ],
@@ -203,6 +225,7 @@ let chat = {
     }
 
 }
+globalThis.chat = chat;
 const { data, methods, mounted, watch } = InitVue(chat, { mounted: chat.init, watch: chat.watch });
 
 let vue = chat = new Vue({

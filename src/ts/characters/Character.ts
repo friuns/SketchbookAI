@@ -359,8 +359,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		// Get action and set it's parameters
 		let action = this.actions[actionName];
 
-		if (action.isPressed !== value)
-		{
+		if (action.isPressed !== value) {
 			// Set value
 			action.isPressed = value;
 
@@ -376,8 +375,10 @@ export class Character extends THREE.Object3D implements IWorldEntity
 			this.charState.onInputChange();
 
 			// Reset the 'just' attributes
-			action.justPressed = false;
-			action.justReleased = false;
+			requestAnimationFrame(() => {
+				action.justPressed = false;
+				action.justReleased = false;
+			});
 		}
 	}
 

@@ -57,7 +57,11 @@ export class Scenario
 
 		if (!this.invisible) this.createLaunchLink();
 
-		// Find all scenario spawns and enitites
+		/*
+		setTimeout(() => {
+			world.loadingManager.onFinishedCallback();
+		}, 0);
+		return;*/
 		root.traverse((child) => {
 			if (child.hasOwnProperty('userData') && child.userData.hasOwnProperty('data'))
 			{

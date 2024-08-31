@@ -121,6 +121,7 @@ function SaveState() {
         appendedElements.add(element);
         return element;
     };
+    
     const originalSetInterval = window.setInterval;
     const setIntervals = new Set();
     
@@ -149,7 +150,7 @@ function SaveState() {
                 world.gui.removeFolder(world.gui.__folders[key]);
             }
         });
-        snapshot.reset.forEach(reset => reset());
+        snapshot.reset.reverse().forEach(reset => reset());
         snapshot.reset = [];
     
         setIntervals.forEach(id => clearInterval(id));

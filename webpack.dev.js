@@ -6,6 +6,8 @@ module.exports = merge(common, {
     devtool: 'inline-source-map',
     devServer: {
         // progress: true,
-        liveReload: false
+        liveReload: false,
+        host: '0.0.0.0',  // Allow access from any IP
+   //     allowedHosts: 'all'  // Allow all hosts to connect
     },
 });

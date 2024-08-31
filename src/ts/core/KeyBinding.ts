@@ -7,6 +7,6 @@ export class KeyBinding
 	
 	constructor(...code: string[])
 	{
-		this.eventCodes = code;
+		this.eventCodes = code.map(a => a.replace("Mouse", "mouse"));
 	}
 }

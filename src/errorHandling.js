@@ -45,30 +45,33 @@ var originalConsoleError = console.error;
 console.error = (...args) => {
     if (args[0].message === "The user has exited the lock before this request was completed.")
         return;
-    if(settings.enableBreakpoints)
-        debugger;
-    let error = chat.variant.lastError = {
-        args:args,
-        url: args.map(arg => arg.target?.responseURL).find(a => a),
-        message: args.map(arg => {
-            return arg.target?.responseURL && `Not Found: ${arg.target.responseURL}. ` 
-                || arg.stack && arg.message + " at " + ParseCodeLineFromError(lastEvalCode, arg)
-                || arg.message
-                || typeof arg === 'object' && JSON.stringify(arg)
-                || String(arg);
-        }).join(' '),
-        toString() {
-            return this.message;
+
+    if (globalThis.chat) {
+        if (settings?.enableBreakpoints)
+            debugger;
+        let error = chat.variant.lastError = {
+            args: args,
+            url: args.map(arg => arg.target?.responseURL).find(a => a),
+            message: args.map(arg => {
+                return arg.target?.responseURL && `Not Found: ${arg.target.responseURL}. `
+                    || arg.stack && arg.message + " at " + ParseCodeLineFromError(lastEvalCode, arg)
+                    || arg.message
+                    || typeof arg === 'object' && JSON.stringify(arg)
+                    || String(arg);
+            }).join(' '),
+            toString() {
+                return this.message;
+            }
+        }
+        if (chat.currentVariant != 0) {
+            chat.switchVariant(0, false).then(() => {
+                chat.lastError = error;
+            });
+
         }
     }
-    if (chat.currentVariant != 0)
-    {
-        chat.switchVariant(0, false).then(() => {
-            chat.lastError = error;
-        });
-        
-    }
     originalConsoleError(...args);
+    
 };
 function ParseCodeLineFromError(code, error) {
     const lineWithInfo = error.stack.split('\n').find(line => line.includes('at eval'));

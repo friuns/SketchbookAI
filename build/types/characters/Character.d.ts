@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
-import { KeyBinding } from '../core/KeyBinding';
 import { VectorSpringSimulator } from '../physics/spring_simulation/VectorSpringSimulator';
 import { RelativeSpringSimulator } from '../physics/spring_simulation/RelativeSpringSimulator';
 import { ICharacterAI } from '../interfaces/ICharacterAI';
@@ -39,9 +38,6 @@ export declare class Character extends THREE.Object3D implements IWorldEntity {
     defaultRotationSimulatorMass: number;
     rotationSimulator: RelativeSpringSimulator;
     viewVector: THREE.Vector3;
-    actions: {
-        [action: string]: KeyBinding;
-    };
     characterCapsule: CapsuleCollider;
     rayResult: CANNON.RaycastResult;
     rayHasHit: boolean;
@@ -57,6 +53,7 @@ export declare class Character extends THREE.Object3D implements IWorldEntity {
     controlledObject: IControllable;
     occupyingSeat: VehicleSeat;
     vehicleEntryInstance: VehicleEntryInstance;
+    gltf: any;
     private physicsEnabled;
     constructor(gltf: any);
     setAnimations(animations: []): void;

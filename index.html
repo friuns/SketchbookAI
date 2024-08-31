@@ -68,6 +68,11 @@
         <div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center" :style="{ opacity: isCursorLocked ? 1 : 1 }">
             <div class="w-full max-w-xs relative" >
                 <pre id="floating-code" class="floating-code" style="pointer-events: none;" v-html="floatingCode"></pre>
+                <div class="flex justify-center mb-2">
+                    <div id="camera-button" class="camera-button" style="width: 60px; height: 60px; background-color: rgba(0, 0, 0, 0.7); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer;" @click="UploadFile()">
+                        <i class="fas fa-camera" style="color: white; font-size: 24px;"></i>
+                    </div>
+                </div>
                 <div class="progress-circle w-6 h-6 mr-2" :class="{ hidden: !isLoading }"></div>
                 <div v-if="variants.length > 0" class="flex justify-center mb-2">
                     <button 
@@ -80,7 +85,7 @@
                             'bg-blue-500 text-white': currentVariant === index && !variant.lastError && !variant.processing,
                             'bg-red-500 text-white': variant.lastError,
                             'bg-gray-300 text-gray-700': currentVariant !== index && !variant.lastError || variant.processing,
-                            'opacity-50 cursor-not-allowed': variant.processing
+                            'opacity-50 ': variant.processing
                         }"
                         :disabled="variant.processing"
                     >

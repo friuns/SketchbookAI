@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { CameraOperator } from '../core/CameraOperator';
 import { Stats } from '../../lib/utils/Stats';
+import * as GUI from '../../lib/utils/dat.gui';
 import { CannonDebugRenderer } from '../../lib/cannon/CannonDebugRenderer';
 import { InputManager } from '../core/InputManager';
 import { LoadingManager } from '../core/LoadingManager';
@@ -39,13 +40,15 @@ export declare class World {
     cannonDebugRenderer: CannonDebugRenderer;
     scenarios: Scenario[];
     readonly characters: Character[];
-    vehicles: Vehicle[];
-    paths: Path[];
+    readonly vehicles: Vehicle[];
+    readonly paths: Path[];
     scenarioGUIFolder: any;
     updatables: IUpdatable[];
+    loadingManager: LoadingManager;
+    isMobile: boolean;
     private lastScenarioID;
     constructor();
-    initialize(worldScenePath?: string): Promise<void>;
+    initialize(worldScenePath?: any): Promise<void>;
     update(timeStep: number, unscaledTimeStep: number): void;
     updatePhysics(timeStep: number): void;
     isOutOfBounds(position: CANNON.Vec3): boolean;
@@ -58,9 +61,9 @@ export declare class World {
      */
     render(world: World): void;
     setTimeScale(value: number): void;
-    
+    add(worldEntity: IWorldEntity | any): void;
     registerUpdatable(registree: IUpdatable): void;
-    
+    remove(worldEntity: IWorldEntity): void;
     unregisterUpdatable(registree: IUpdatable): void;
     loadScene(loadingManager: LoadingManager, gltf: any): void;
     launchScenario(scenarioID: string, loadingManager?: LoadingManager): void;
@@ -69,5 +72,6 @@ export declare class World {
     scrollTheTimeScale(scrollAmount: number): void;
     updateControls(controls: any): void;
     private generateHTML;
+    gui: GUI;
     private createParamsGUI;
 }
