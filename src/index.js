@@ -12,7 +12,7 @@ let chat = {
     window: window,
     globalThis: globalThis,
     document: document,
-    suggestions: ['Add a red cube', 'Create a bouncing ball', ["add zombie", "make zombie follow player", "add pistol on ground so player can pick it up"]],
+    suggestions: ['Add a red cube', 'Create a bouncing ball', 'make pistol shoot, bullets, kill zombie when hit'],
     lastError: null,
     isLoading: false,
     params: {

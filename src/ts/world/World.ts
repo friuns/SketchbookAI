@@ -67,6 +67,7 @@ export class World
 
 	constructor()
 	{
+		
 		const scope = this; 
 		// WebGL not supported
 		if (!Detector.webgl)

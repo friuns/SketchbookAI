@@ -9,16 +9,15 @@ function addMethodListener(object, methodName, extension) {
         return extension.call(object, ...args);
     };
 }
-
- function CreateCar(carModel) {
-    
-
-    /**
+ /**
  * Initializes a car with its model
- * @param {CarPrototype} car - The car object to initialize
  * @param {THREE.Object3D} carModel - The 3D model of the car
  * @returns {void}
  */
+function CreateCar(carModel) {
+    
+
+   
     carModel.initCar = function (car, carModel) {
         initCar(car, carModel);
     }
@@ -26,9 +25,14 @@ function addMethodListener(object, methodName, extension) {
     world.add(car);    
     return car;
 }
-GLTFLoader.prototype.loadAsync = async function (glbUrl) {
+let loader = new GLTFLoader();
+ /**
+ * @param {string} glbUrl - The 3D model of the car
+ * @returns {Promise<THREE.GLTF>}
+ */
+async function loadAsync(glbUrl) {
     return new Promise((resolve, reject) => {
-        this.load(glbUrl, (gltf) => {
+        loader.load(glbUrl, (gltf) => {
             resolve(gltf);
         }, undefined, reject);
     });

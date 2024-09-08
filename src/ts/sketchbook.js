@@ -102,3 +102,23 @@ globalThis.Swal = Swal.mixin({
     }
 });
 
+
+/*
+function exposeModules() {
+    global.exposedModules = global.exposedModules || {};
+    Object.keys(require.cache).forEach((modulePath) => {
+        try {
+            const moduleName = modulePath.split('/').pop().replace('.js', '');
+            if (!global.exposedModules[moduleName]) {
+                global.exposedModules[moduleName] = require(modulePath);
+                console.log(`Exposed module: ${moduleName}`);
+            }
+        } catch (error) {
+            console.error(`Error exposing module at ${modulePath}: ${error.message}`);
+        }
+    });
+    console.log('All modules have been exposed.');
+}
+  // Run the function to expose modules
+  globalThis.exposeModules = exposeModules;
+  */

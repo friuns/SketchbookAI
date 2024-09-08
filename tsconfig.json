@@ -3,8 +3,8 @@
         "src/**/*"
 , "src/ts/vehicles/test.js", "build/types/vehicles/index.js", "src/index.js", "src/codeTemplate.js"    ],
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
+        "module": "esnext",
+        "target": "es2017",
         "sourceMap": true,
         "moduleResolution": "node",
         "declaration": true,
@@ -14,6 +14,18 @@
         "baseUrl": ".",
         "paths": {
             "cannon" : ["src/lib/cannon/cannon"]
-        }
+        },
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "lib": ["es2017", "dom"],
+        "allowJs": true,
+        "checkJs": false,
+        "strict": false,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "noEmit": true,
+        "isolatedModules": true
     }
 } 
