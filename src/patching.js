@@ -33,7 +33,7 @@ CANNON.Body.prototype.constructor = CANNON.Body;
         ...gltf,
         animations: gltf.animations.map(a => ({ ...a })),
         original: gltf,
-        scene: SkeletonUtils.SkeletonUtils.clone(gltf.scene)
+        scene: SkeletonUtils.clone(gltf.scene)
     });
 
     GLTFLoader.prototype.load = function (url, onLoad, onProgress, onError) {

@@ -136,7 +136,7 @@ function SaveState() {
         appendedElements.clear();
         world.graphicsWorld.children.length = 0;
         world.graphicsWorld.children.push(...snapshot.graphicsWorld);
-        [...world.physicsWorld.bodies].forEach(body => world.physicsWorld.remove(body));
+        [...world.physicsWorld.bodies].forEach(body => world.physicsWorld.removeBody(body));
         snapshot.physicsWorld.forEach(body => world.physicsWorld.addBody(body));
         world.updatables.length = 0;
         world.updatables.push(...snapshot.updatables);

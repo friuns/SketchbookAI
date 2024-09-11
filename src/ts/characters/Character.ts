@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
+import * as CANNON from 'cannon-es';
 import * as _ from 'lodash';
 import * as Utils from '../core/FunctionLibrary';
 import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -25,7 +25,7 @@ import { VehicleEntryInstance } from './VehicleEntryInstance';
 import { SeatType } from '../enums/SeatType';
 import { GroundImpactData } from './GroundImpactData';
 import { ClosestObjectFinder } from '../core/ClosestObjectFinder';
-import { Object3D } from 'three';
+import { AnimationAction, AnimationClip, Object3D } from 'three';
 import { EntityType } from '../enums/EntityType';
 
 export class Character extends THREE.Object3D implements IWorldEntity
@@ -38,7 +38,11 @@ export class Character extends THREE.Object3D implements IWorldEntity
 	public modelContainer: THREE.Group;
 	public materials: THREE.Material[] = [];
 	public mixer: THREE.AnimationMixer;
-	public animations: any[];
+	public animations: AnimationClip[];
+	public actionClips = {};
+	// public currentAnimation: string = "idle";
+	// public previousAnimation: AnimationAction;
+
 
 	// Movement
 	public acceleration: THREE.Vector3 = new THREE.Vector3();
@@ -63,7 +67,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
      */
 	public actions: { [action: string]: KeyBinding };
 	public characterCapsule: CapsuleCollider;
-	
+
 	// Ray casting
 	public rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
 	public rayHasHit: boolean = false;
@@ -73,23 +77,25 @@ export class Character extends THREE.Object3D implements IWorldEntity
 	public initJumpSpeed: number = -1;
 	public groundImpactData: GroundImpactData = new GroundImpactData();
 	public raycastBox: THREE.Mesh;
-	
+
 	public world: World;
 	public charState: ICharacterState;
 	public behaviour: ICharacterAI;
-	
+
 	// Vehicles
 	public controlledObject: IControllable;
 	public occupyingSeat: VehicleSeat = null;
 	public vehicleEntryInstance: VehicleEntryInstance = null;
-	public gltf: any;
+
 	private physicsEnabled: boolean = true;
+	private preStep: () => void;
+	private postStep: () => void;
 
 	constructor(gltf: GLTF)
 	{
 		super();
-		this.gltf = gltf;
 		this.readCharacterData(gltf);
+		this.mixer = new THREE.AnimationMixer(gltf.scene);
 		this.setAnimations(gltf.animations);
 
 		// The visuals group is centered for easy character tilting
@@ -101,8 +107,6 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		this.modelContainer.position.y = -0.57;
 		this.tiltContainer.add(this.modelContainer);
 		this.modelContainer.add(gltf.scene);
-
-		this.mixer = new THREE.AnimationMixer(gltf.scene);
 
 		this.velocitySimulator = new VectorSpringSimulator(60, this.defaultVelocitySimulatorMass, this.defaultVelocitySimulatorDamping);
 		this.rotationSimulator = new RelativeSpringSimulator(60, this.defaultRotationSimulatorMass, this.defaultRotationSimulatorDamping);
@@ -157,17 +161,26 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		this.raycastBox = new THREE.Mesh(boxGeo, boxMat);
 		this.raycastBox.visible = false;
 
-		// Physics pre/post step callback bindings
-		this.characterCapsule.body.preStep = (body: CANNON.Body) => { this.physicsPreStep(body, this); };
-		this.characterCapsule.body.postStep = (body: CANNON.Body) => { this.physicsPostStep(body, this); };
-
 		// States
 		this.setState(new Idle(this));
 	}
 
-	public setAnimations(animations: THREE.AnimationClip[]): void
+	public setAnimations(animations: AnimationClip[]): void
 	{
 		this.animations = animations;
+		this.animations.map(e => {
+			const action = this.mixer.clipAction(e);
+			this.actionClips[e.name] = action;
+
+			if (action.getClip().name == "idle") {
+				// this.previousAnimation = action;
+				action.setEffectiveWeight(1);
+			}
+			else {
+				action.setEffectiveWeight(0);
+			}
+			action.play()
+		})
 	}
 
 	public setArcadeVelocityInfluence(x: number, y: number = x, z: number = x): void
@@ -182,7 +195,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 
 	/**
 	 * Set state to the player. Pass state class (function) name.
-	 * @param {function} State 
+	 * @param {function} State
 	 */
 	public setState(state: ICharacterState): void
 	{
@@ -230,7 +243,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 	{
 		let lookVector = new THREE.Vector3().copy(vector).setY(0).normalize();
 		this.orientationTarget.copy(lookVector);
-		
+
 		if (instantly)
 		{
 			this.orientation.copy(lookVector);
@@ -258,7 +271,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		}
 		else
 		{
-			this.world.physicsWorld.remove(this.characterCapsule.body);
+			this.world.physicsWorld.removeBody(this.characterCapsule.body);
 		}
 	}
 
@@ -302,7 +315,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 				for (const action in this.actions) {
 					if (this.actions.hasOwnProperty(action)) {
 						const binding = this.actions[action];
-	
+
 						if (_.includes(binding.eventCodes, code))
 						{
 							this.triggerAction(action, pressed);
@@ -345,7 +358,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 			this.world.cameraOperator.move(deltaX, deltaY);
 		}
 	}
-	
+
 	public handleMouseWheel(event: WheelEvent, value: number): void
 	{
 		if (this.controlledObject !== undefined)
@@ -501,7 +514,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 			this.viewVector = new THREE.Vector3().subVectors(this.position, this.world.camera.position);
 			this.getWorldPosition(this.world.cameraOperator.target);
 		}
-		
+
 	}
 
 	public setAnimation(clipName: string, fadeIn: number): number
@@ -509,25 +522,37 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		if (this.mixer !== undefined)
 		{
 			// gltf
-			let clip = THREE.AnimationClip.findByName( this.animations, clipName );
+			// let clip = THREE.AnimationClip.findByName( this.animations, clipName );
 
-			let action = this.mixer.clipAction(clip);
-			if (action === null)
-			{
+			let action = this.actionClips[clipName];
+			if (action === null) {
 				console.warn(`Animation ${clipName} not found!`);
 				return 0;
 			}
 
-			this.mixer.stopAllAction();
+			// Seems like stopAllAction behaviour was changed from fading out to cancelling all fade operations.
+			for (const key in this.actionClips) {
+				if (Object.prototype.hasOwnProperty.call(this.actionClips, key)) {
+					const element = this.actionClips[key] as AnimationAction;
+					element.fadeOut(0.2);
+				}
+			}
+			this.setWeight(action, 1);
+			action.reset();
 			action.fadeIn(fadeIn);
-			action.play();
 
 			return action.getClip().duration;
 		}
 	}
 
-	public springMovement(timeStep: number): void
-	{
+	public setWeight(action, weight: number) {
+		action.enabled = true;
+		// Need to reduce the speed of animation for it so non-loopable animations dont overflow.
+		action.setEffectiveTimeScale(0.7);
+		action.setEffectiveWeight(weight);
+	}
+
+	public springMovement(timeStep: number): void {
 		// Simulator
 		this.velocitySimulator.target.copy(this.velocityTarget);
 		this.velocitySimulator.simulate(timeStep);
@@ -576,7 +601,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		if (this.vehicleEntryInstance === null)
 		{
 			let moveVector = this.getCameraRelativeMovementVector();
-	
+
 			if (moveVector.x === 0 && moveVector.y === 0 && moveVector.z === 0)
 			{
 				this.setOrientation(this.orientation);
@@ -714,11 +739,11 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		{
 			this.transferControls(vehicle);
 			this.resetControls();
-	
+
 			this.controlledObject = vehicle;
 			this.controlledObject.allowSleep(false);
 			vehicle.inputReceiverInit();
-	
+
 			vehicle.controllingCharacter = this;
 		}
 	}
@@ -775,7 +800,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 			{
 				this.setState(new ExitingVehicle(this, this.occupyingSeat));
 			}
-			
+
 			this.stopControllingVehicle();
 		}
 	}
@@ -930,7 +955,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 				body.velocity.vsub(add, body.velocity);
 			}
 
-			// Add positive vertical velocity 
+			// Add positive vertical velocity
 			body.velocity.y += 4;
 			// Move above ground by 2x safe offset value
 			body.position.y += character.raySafeOffset * 2;
@@ -955,6 +980,16 @@ export class Character extends THREE.Object3D implements IWorldEntity
 
 			// Register physics
 			world.physicsWorld.addBody(this.characterCapsule.body);
+
+			// Physics pre/post step callback bindings
+			this.preStep=() => {
+				this.physicsPreStep(this.characterCapsule.body, this);
+			}
+			this.postStep =() => {
+				this.physicsPostStep(this.characterCapsule.body, this);
+			}
+			this.world.physicsWorld.addEventListener("preStep", this.preStep);
+			this.world.physicsWorld.addEventListener("postStep", this.postStep);
 
 			// Add to graphicsWorld
 			world.graphicsWorld.add(this);
@@ -981,13 +1016,17 @@ export class Character extends THREE.Object3D implements IWorldEntity
 				world.inputManager.inputReceiver = undefined;
 			}
 
+			// Physics pre/post step callback bindings
+			this.world.physicsWorld.removeEventListener("preStep", this.preStep);
+			this.world.physicsWorld.removeEventListener("postStep", this.postStep);
+
 			this.world = undefined;
 
 			// Remove from characters
 			_.pull(world.characters, this);
 
 			// Remove physics
-			world.physicsWorld.remove(this.characterCapsule.body);
+			world.physicsWorld.removeBody(this.characterCapsule.body);
 
 			// Remove visuals
 			world.graphicsWorld.remove(this);

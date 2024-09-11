@@ -107,12 +107,12 @@ class BaseObject extends THREE.Object3D {
     }
     addToWorld(world) {
         world.graphicsWorld.add(this);
-        world.physicsWorld.add(this.body);
+        world.physicsWorld.addBody(this.body);
         world.updatables.push(this);
     }
     removeFromWorld(world) {
         world.graphicsWorld.remove(this);
-        world.physicsWorld.remove(this.body);
+        world.physicsWorld.removeBody(this.body);
     }
 }
 

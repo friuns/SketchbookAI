@@ -146,7 +146,7 @@ const ${modelName}Model = new TrimeshCollider(${modelName}Model.scene, {
         position: ${modelName}Model.scene.position,
         rotation: ${modelName}Model.scene.quaternion
     });
-world.physicsWorld.add(${modelName}Model.body);
+world.physicsWorld.addBody(${modelName}Model.body);
 */
 `;
     code += `\n${intersectionPoint ? `${modelName}.setPosition(${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)}, ${intersectionPoint.z.toFixed(2)});` : ''}`

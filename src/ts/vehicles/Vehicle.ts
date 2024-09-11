@@ -1,6 +1,6 @@
 import { Character } from '../characters/Character';
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
+import * as CANNON from 'cannon-es';
 import { World } from '../world/World';
 import * as _ from 'lodash';
 import { KeyBinding } from '../core/KeyBinding';
@@ -21,6 +21,7 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 	public controllingCharacter: Character;
 	public actions: { [action: string]: KeyBinding; } = {};
 	public rayCastVehicle: CANNON.RaycastVehicle;
+	private preStep: () => void;
 	public seats: VehicleSeat[] = [];
 	public wheels: Wheel[] = [];
 	public drive: string;
@@ -113,11 +114,20 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 			wheelObject.quaternion.copy(Utils.threeQuat(transform.quaternion));
 
 			let upAxisWorld = new CANNON.Vec3();
-			this.rayCastVehicle.getVehicleAxisWorld(this.rayCastVehicle.indexUpAxis, upAxisWorld);
+			this.getVehicleAxisWorld(this.rayCastVehicle.indexUpAxis, upAxisWorld);
 		}
 
 		this.updateMatrixWorld();
 	}
+
+	public getVehicleAxisWorld(axisIndex: number, result: CANNON.Vec3){
+		result.set(
+			axisIndex === 0 ? 1 : 0,
+			axisIndex === 1 ? 1 : 0,
+			axisIndex === 2 ? 1 : 0
+		);
+		this.rayCastVehicle.chassisBody.vectorToWorldFrame(result, result);
+	};
 
 	public forceCharacterOut(): void
 	{
@@ -280,6 +290,8 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 		}
 	}
 
+	abstract 
+
 	public setPosition(x: number, y: number, z: number): void
 	{
 		if (this.spawnPoint.position.lengthSq() === 0) {
@@ -297,6 +309,7 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 			if (wheel.steering) this.rayCastVehicle.setSteeringValue(val, wheel.rayCastWheelInfoIndex);
 		});
 	}
+	public abstract physicsPreStep(body: CANNON.Body, car: Vehicle): void
 
 	public applyEngineForce(force: number): void
 	{
@@ -347,6 +360,11 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 			{
 				world.sky.csm.setupMaterial(mat);
 			});
+
+			this.preStep =()=>{
+				this.physicsPreStep(this.collision, this);
+			}
+			this.world.physicsWorld.addEventListener("preStep",this.preStep)
 		}
 	}
 
@@ -358,6 +376,10 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 		}
 		else
 		{
+
+			// Remove physics pre/post step callback bindings
+			this.world.physicsWorld.removeEventListener("preStep", this.preStep);
+
 			this.world = undefined;
 			_.pull(world.vehicles, this);
 			world.graphicsWorld.remove(this);

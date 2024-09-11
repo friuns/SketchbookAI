@@ -1,7 +1,7 @@
 import '../css/main.css';
 
 import * as THREEImport from 'three';
-import * as CANNONImport from 'cannon';
+import * as CANNONImport from 'cannon-es';
 
 import { FollowTarget } from './characters/character_ai/FollowTarget';
 import { FollowPath } from './characters/character_ai/FollowPath';

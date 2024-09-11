@@ -8,8 +8,8 @@
         "src/codeTemplate.js"        
     ],
     "compilerOptions": {
-        "module": "es2022",
-        "target": "es2017",
+        "module": "commonjs",
+        "target": "es6",
         "sourceMap": true,
         "moduleResolution": "node",
         "declaration": true,
@@ -18,9 +18,7 @@
         //"outFile": "./types/index.d.ts",
         "baseUrl": ".",
         "paths": {
-            "cannon": ["src/lib/cannon/cannon"]
-        },
-        //"allowJs": true,
-        
+            // "cannon" : ["src/lib/cannon/cannon"]
+        }
     }
 } 

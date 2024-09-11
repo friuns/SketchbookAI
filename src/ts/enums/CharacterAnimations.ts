@@ -25,7 +25,6 @@ export enum CAnims {
     start_forward = "start_forward",
     start_left = "start_left",
     start_right = "start_right",
-    stop = "stop",
-    unknown = undefined
+    stop = "stop"
 }
 
