@@ -5,45 +5,18 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://unpkg.com/typescript@latest/lib/typescript.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.min.css" rel="stylesheet" type="text/css" />
 </head>
 
-<body>
-    <script>
-        function compileTypeScript(code) {
-            const result = ts.transpileModule(code, {
-                compilerOptions: {
-                    module: ts.ModuleKind.CommonJS,
-                    target: ts.ScriptTarget.ES2015,
-                    inlineSourceMap: true,
-                    inlineSources: true
-                }
-            });
-
-            return result.outputText;
-        }
-        // Example TypeScript code
-        const typeScriptCode = `
-class Greeter {
-  constructor(private name: string) { }
-  async greet() {
-    console.log(\`Hello, \${this.name}!\`);
-  }
-}
-
-const greeter = new Greeter("world");
-await greeter.greet();
-`;
-
-        // Compile and execute the TypeScript code
-        const compiledCode = compileTypeScript(typeScriptCode);
-        console.log(compiledCode);
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.textContent = compiledCode;
-        document.body.appendChild(script);
-
-    </script>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="form-control">
+        <input type="text" placeholder="Type your suggestion here..." class="input input-bordered w-full max-w-xs" />
+        <datalist id="suggestions">
+            <option value="Add a red cube">
+            <option value="Create a bouncing ball">
+            <option value="Make pistol shoot, bullets, kill zombie when hit">
+        </datalist>
+    </div>
 </body>
 
 </html>

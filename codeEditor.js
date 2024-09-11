@@ -16,7 +16,7 @@ new Vue({
             await new Promise(resolve => requestAnimationFrame(resolve));
             if (this.showEditor)
                 require(['vs/editor/editor.main'], async function () {
-                    let code = chat.variant.files[0].content.replace(/export |import .*?;/gs, ""); //(await fetch('src/code2.ts').then(r => r.text())).replace(/export |import .*?;/gs, ""),
+                    let code = chat.variant.files[0].content.replace(/export |import .*?;/gs, ""); //(await fetch('src/code2.ts').then(r => r.text())).replace(/export |import .*?;/gs, "");
                     
                     let classNames = await (fetch('paths.txt').then(r => r.text()));
                     classNames = classNames.replaceAll("\\", "/").replaceAll("\r", "");
@@ -40,11 +40,12 @@ new Vue({
 
                     await Promise.all(classNames.map(LoadClass));
 
+                    
                     globalThis.editor = monaco.editor.create(document.getElementById('editorElement'), {
                         value: "export {};\nlet GLTFLoader= THREE.GLTFLoader; \n" + code,
-                        
                         language: 'typescript',
                         theme: 'vs-dark',
+                        readOnly: globalThis.isMobile, // Make editor readonly if on mobile
                     });
                     
 

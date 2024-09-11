@@ -12,9 +12,8 @@ document.body.appendChild(textPrompt);
 
 
 
-var loader = globalThis.loader = new GLTFLoader();
 
-var playerModel = globalThis.playerModel = await loader.loadAsync('build/assets/boxman.glb');
+var playerModel = globalThis.playerModel = await loadAsync('build/assets/boxman.glb');
 expose(playerModel.scene, "player");
 AutoScale(playerModel.scene, 1.7);
 addMethodListener(world, world.update, function () {

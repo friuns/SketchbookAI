@@ -2,7 +2,7 @@
 
 function InitVue(obj, args = {}) {
     var updatedFromHash;
-    let defaultParams = _.cloneDeep(obj.params);
+    let defaultParams = globalThis._?.cloneDeep(obj.params)??{};
     const updateParamsFromHash = (event) => {
         updatedFromHash=true;
         const hashParams = new URLSearchParams(window.location.hash.slice(1));

@@ -6,9 +6,9 @@ var textPrompt = globalThis.textPrompt = document.createElement('div');
 textPrompt.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
 document.body.appendChild(textPrompt);
 
-var loader = globalThis.loader = new GLTFLoader();
 
-var playerModel = globalThis.playerModel = await loader.loadAsync('build/assets/boxman.glb');
+
+var playerModel = globalThis.playerModel = await loadAsync('build/assets/boxman.glb');
 expose(playerModel.scene, "player");
 
 class Player extends Character {

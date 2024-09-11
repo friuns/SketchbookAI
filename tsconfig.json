@@ -15,6 +15,6 @@
         "paths": {
             "cannon" : ["src/lib/cannon/cannon"]
         },
-  //      "allowJs": true
+        "allowJs": true
     }
 } 
