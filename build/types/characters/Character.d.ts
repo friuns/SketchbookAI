@@ -24,6 +24,7 @@ export declare class Character extends THREE.Object3D implements IWorldEntity {
     materials: THREE.Material[];
     mixer: THREE.AnimationMixer;
     animations: any[];
+    actions: { [action: string]: KeyBinding };
     acceleration: THREE.Vector3;
     velocity: THREE.Vector3;
     arcadeVelocityInfluence: THREE.Vector3;

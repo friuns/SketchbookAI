@@ -30,11 +30,13 @@ async function Eval(content)
     lastEvalCode = code;
     try
     {
+        /*
         const script = document.createElement('script');
         script.type = 'module';
         script.textContent = code;
         document.body.appendChild(script);
-        //(0, eval)(code);    
+        */
+        (0, eval)(code);    
     }
     catch(e)
     {

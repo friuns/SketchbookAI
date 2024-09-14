@@ -1,3 +1,4 @@
+export{}
 //Example of fixing animation offset by resetting the root bone's position to its initial position before animations are applied.
 class Goblin extends Character {
     private rootBone: THREE.Bone | null = null;

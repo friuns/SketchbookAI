@@ -1,6 +1,9 @@
-globalThis.world = new World();
-await world.initialize('build/assets/world.glb');
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import * as TWEEN from '@tweenjs/tween.js';
 
+const world = new World();
+await world.initialize('build/assets/world.glb');
 
 const textPrompt = document.createElement('div');
 textPrompt.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
@@ -12,7 +15,11 @@ const playerModel = await loader.loadAsync('build/assets/boxman.glb');
 expose(playerModel.scene, "player");
 
 class MinecraftPlayer extends Character {
-    constructor(model) {
+    rhand: THREE.Object3D | null;
+    lhand: THREE.Object3D | null;
+    lastCubePosition: THREE.Vector3 | null;
+
+    constructor(model: GLTF) {
         super(model);
         this.rhand = model.scene.getObjectByName("rhand");
         this.lhand = model.scene.getObjectByName("lhand");
@@ -20,39 +27,36 @@ class MinecraftPlayer extends Character {
         this.lastCubePosition = null;
     }
 
-    remapAnimations(animations) {
+    remapAnimations(animations: THREE.AnimationClip[]): void {
         animations.forEach(a => {
             if (a.name === "Idle") a.name = CAnims.idle;
             if (a.name === "Run") a.name = CAnims.run;
         });
     }
 
-
-
-    handleMouseButton(event, code, pressed) {
+    handleMouseButton(event: MouseEvent, code: string, pressed: boolean): void {
         super.handleMouseButton(event, code, pressed);
         if (event.button === 0 && pressed === true) {
             this.removeCube();
         } else if (event.button === 2 && pressed === true) {
-            // Handle right mouse click
             this.placeNewCube();
         }
     }
 
-    removeCube() {
+    removeCube(): void {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(new THREE.Vector2(0, 0), world.camera);
         const intersects = raycaster.intersectObjects(world.graphicsWorld.children, true);
 
         if (intersects.length > 0) {
-            const intersection = intersects[0].object?.parent; // Get the intersected object
-            if (intersection instanceof BaseObject) { // Check if it's a BaseObject
-                world.remove(intersection); // Remove from the world
+            const intersection = intersects[0].object?.parent;
+            if (intersection instanceof BaseObject) {
+                world.remove(intersection);
             }
         }
     }
 
-    placeNewCube() {
+    placeNewCube(): void {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(new THREE.Vector2(0, 0), world.camera);
         const intersects = raycaster.intersectObjects(world.graphicsWorld.children, true);
@@ -78,8 +82,8 @@ class MinecraftPlayer extends Character {
                     new THREE.BoxGeometry(cubeScale, cubeScale, cubeScale),
                     new THREE.MeshStandardMaterial({ map: texture })
                 );
-                const newCube = new BaseObject(newCubeModel, true);
-                newCube.setPosition(cubePosition);
+                const newCube = new BaseObject(newCubeModel, 0);
+                newCube.setPosition(cubePosition.x, cubePosition.y, cubePosition.z);
                 newCube.addToWorld(world);
 
                 this.lastCubePosition = cubePosition;
@@ -88,22 +92,14 @@ class MinecraftPlayer extends Character {
     }
 }
 
-
-const player = new Player(playerModel);
+const player = new MinecraftPlayer(playerModel);
 player.setPosition(0, 0, -5);
 world.add(player);
 
 addMethodListener(player, "inputReceiverInit", function () {
-    world.cameraOperator.setRadius(1.6)
+    world.cameraOperator.setRadius(1.6);
 });
 player.takeControl();
 
-const pistolModel = await loader.loadAsync("build/assets/pistol.glb");
-const pistol = pistolModel.scene.getObjectByName("Object_2");
-pistol.position.set(0.1, -0.1, 0.1);
-pistol.rotation.set(0, Math.PI / 2, 0);
-player.rhand.attach(pistol);
 
-expose(pistol, "pistol");
-world.startRenderAndUpdatePhysics?.();
 

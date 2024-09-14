@@ -62,54 +62,90 @@ function GetPlayerFront(distance = 2) {
 THREE.Object3D.prototype.setPosition = function (x,y,z) {
     this.position.set(x,y,z);    
 }
-
+function log(...args) {
+    console.log(...args);
+    return args[args.length - 1];
+}
 class BaseObject extends THREE.Object3D {
     updateOrder = 0;
-    constructor(model, mass = 1) {
+    body;
+    
+    /**
+     * @param {THREE.Object3D} model - The 3D model to be used for this object.
+     * @param {number} [mass=1] - The mass of the object for physics calculations.
+     */
+    constructor(model, mass = 1, type = CANNON.Body.STATIC) {
         super();        
+        
         const bbox = new THREE.Box3().setFromObject(model);
         const size = bbox.getSize(new THREE.Vector3()).multiplyScalar(0.5);
         const center = new THREE.Vector3();        
         bbox.getCenter(center);
         model.position.copy(center.negate());
         this.add(model);
-        
-        this.body = new CANNON.Body({
+        /**
+         * The physics body of the object.
+         * @type {CANNON.Body}
+         */
+        this.body = new CANNON.Body(log({
             mass: mass,
             position: Utils.cannonVector(center),
             shape: new CANNON.Box(new CANNON.Vec3(size.x, size.y, size.z)),
-            material: defaultMaterial
-        });
-        
+            material: defaultMaterial,
+            type: type
+        }));
+        this.body.material.friction = 0.5;
     }
-    setPosition(pos) {
-        this.body.position.copy(Utils.cannonVector(pos));
-        this.position.copy(pos);
+
+    /**
+     * Sets the position of both the 3D object and its physics body.
+     * @param {number} x - The x-coordinate.
+     * @param {number} y - The y-coordinate.
+     * @param {number} z - The z-coordinate.
+     */
+    setPosition(x, y, z) {
+        this.body.position.set(x, y, z);
+        this.position.set(x, y, z);
+        this.body.updateMassProperties();
     }   
+
     oldPosition = new THREE.Vector3();
     oldQuaternion = new THREE.Quaternion();
     executeOneTime = true;
+
+    /**
+     * Updates the object's position and rotation based on its physics body.
+     */
     update() {
-        
         const newPosition = Utils.threeVector(this.body.position);
         const newQuaternion = Utils.threeQuat(this.body.quaternion);
 
-        if (!this.executeOneTime) {
+        if (this.executeOneTime || !this.position.equals(this.oldPosition) || !this.quaternion.equals(this.oldQuaternion)) {
+            this.body.position.copy(Utils.cannonVector(this.position));
+            this.body.quaternion.copy(Utils.cannonQuat(this.quaternion));            
+        } else {
             this.position.copy(newPosition);
             this.quaternion.copy(newQuaternion);
-            this.oldPosition.copy(this.position);
-            this.oldQuaternion.copy(this.quaternion);
-        } else {
-            this.body.position.copy(Utils.cannonVector(this.position));
-            this.body.quaternion.copy(Utils.cannonQuat(this.quaternion));
         }
+        this.oldPosition.copy(this.position);
+        this.oldQuaternion.copy(this.quaternion);
         this.executeOneTime = false;
     }
+
+    /**
+     * Adds this object to the specified world.
+     * @param {World} world - The world to add this object to.
+     */
     addToWorld(world) {
         world.graphicsWorld.add(this);
         world.physicsWorld.addBody(this.body);
         world.updatables.push(this);
     }
+
+    /**
+     * Removes this object from the specified world.
+     * @param {World} world - The world to remove this object from.
+     */
     removeFromWorld(world) {
         world.graphicsWorld.remove(this);
         world.physicsWorld.removeBody(this.body);

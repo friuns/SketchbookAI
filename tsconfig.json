@@ -5,7 +5,7 @@
         "src/ts/vehicles/test.js",
         "build/types/vehicles/index.js",
         "src/index.js",
-        "src/codeTemplate.js"        
+        "src/examples/codeTemplate.ts"        
     ],
     "compilerOptions": {
         "module": "commonjs",

@@ -32,7 +32,11 @@ self.addEventListener('fetch', function(event) {
             }
             
             if (networkResponse.status === 404) {
-
+                
+                if (request.headers.get('accept').includes('text/')) {
+                    return new Response(null, { status: 404 });
+                }
+                
                 if (cachedResponse && cachedResponse.status === 200)
                     return new Response(cachedResponse.body, { status: 200 });
 

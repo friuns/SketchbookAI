@@ -22,13 +22,12 @@ new Vue({
                     let classNames = await (fetch('paths.txt').then(r => r.text()));
                     classNames = classNames.replaceAll("\\", "/").replaceAll("\r", "");
                     classNames = classNames.split('\n');
-                    classNames.push("src/helpers.js");
-                    classNames.push("src/utils.js");
-                    classNames.push("src/code.js");
+                    classNames.push("src/examples/helpers.js");
+                    classNames.push("src/utils.js");                    
                     const LoadClass = async (className) => {
 
-                        let three = className.includes("node_modules/three/");
-                        if (!className.includes("build/types/") && !three && !className.startsWith("src/")) return;
+                        let three = className.includes("node_modules/@types/three/");
+                        if (!className.includes("build/types/") && !three && !className.startsWith("src/") && !className.includes("tween.d.ts") && !className.includes("sweetalert2.d.ts")) return;
                         const text = await (await fetch(className)).text();
                         let code = text.replace(/export |import .*?;/gs, "");
                         //code = code.replaceAll("interface","class");

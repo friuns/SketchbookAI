@@ -39,9 +39,7 @@ globalThis.Character = Character;
 import { KeyBinding } from './core/KeyBinding';
 globalThis.KeyBinding = KeyBinding;
 globalThis.THREE = THREEImport;
-(function(){
-    globalThis.CANNON = CANNONImport;    
-})();
+globalThis.CANNON = CANNONImport;    
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 globalThis.GLTFLoader = GLTFLoader;

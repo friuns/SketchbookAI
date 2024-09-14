@@ -146,14 +146,13 @@ let chat = {
                 'src/ts/characters/character_ai/RandomBehaviour.ts',
              //   'node_modules/three/src/core/Object3D.d.ts',
                 //'src/ts/core/InputManager.ts',
-                'src/helpers.js',                
+                'src/examples/helpers.js',                
                 //'src/examples/rocketLauncher.md',
                 //...(await fetchFilesFromDir('src/examples','js')),                
                 //  ...(await fetchFilesFromDir('src/examples', 'md'))
-                'src/examples/rocketLauncher.js',
-                'src/examples/zombieBullet.js',
-                'src/examples/minecraft.js',
-                'src/examples/pistol.js',                
+                'src/examples/rocketLauncher.ts',
+                'src/examples/minecraft.ts',
+                'src/examples/pistol.ts',                
             ];
             
             const fetchPromises = fileNames.map(path => 

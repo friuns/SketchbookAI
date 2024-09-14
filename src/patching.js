@@ -1,4 +1,4 @@
-let defaultMaterial = new CANNON.Material('defaultMaterial');
+var defaultMaterial = new CANNON.Material('defaultMaterial');
 defaultMaterial.friction = 0.3;
 
 // Extend CANNON.Body to include default material
@@ -20,10 +20,19 @@ CANNON.Body = (function(Body) {
     return ExtendedBody;
 })(CANNON.Body);
 
-// Ensure prototype chain is maintained
-CANNON.Body.prototype = Object.create(CANNON.Body.prototype);
-CANNON.Body.prototype.constructor = CANNON.Body;
+CANNON.Body.prototype.addEventListener = (function(originalAddEventListener) {
 
+    return function(type, listener) {
+        let animationFrameId;
+        originalAddEventListener.call(this, type, ()=>{
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(() => {
+                listener.apply(this, arguments);
+            });
+        });
+        
+    };
+})(CANNON.Body.prototype.addEventListener);
 
 (function GLTFLoader_LoadCache() {
     const gltfCache = new Map();

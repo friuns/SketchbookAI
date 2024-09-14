@@ -138,7 +138,7 @@ world.add(${modelName});
 
     else code += `
 //CRITICAL: Uncomment and assign correct scale immediately!
-//AutoScale({gltfScene:${modelName}Model.scene, approximateScaleInMeters: 5});
+//AutoScale(${modelName}Model.scene, 5);
 ${setPivot ? `SetPivotCenter(${modelName}Model);` : ''}
 world.graphicsWorld.add(${modelName}Model.scene);
 /*
@@ -149,7 +149,7 @@ const ${modelName}Model = new TrimeshCollider(${modelName}Model.scene, {
 world.physicsWorld.addBody(${modelName}Model.body);
 */
 `;
-    code += `\n${intersectionPoint ? `${modelName}.setPosition(${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)}, ${intersectionPoint.z.toFixed(2)});` : ''}`
+    code += `\n${intersectionPoint ? `${modelName}Model.scene.position.set(${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)}, ${intersectionPoint.z.toFixed(2)});` : ''}`
 
     return code;
 }
