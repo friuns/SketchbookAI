@@ -80,7 +80,8 @@ class Player extends Character {
 
     public detachWeapon(): void {
         if (this.heldWeapon) {
-            this.heldWeapon.removeFromParent();
+            this.heldWeapon.detach();
+            interactableObjects.push(this.heldWeapon);
             this.heldWeapon = null;
         }
     }
@@ -280,7 +281,7 @@ interactableObjects.push(rocketLauncher);
 
 //#region RandomBehaviour Class
 
-export class RandomBehaviour implements ICharacterAI
+export class ZombieBehaviour implements ICharacterAI
 {
 	public character: Character;
 	private randomFrequency: number;
@@ -362,13 +363,13 @@ class Zombie extends Character {
     chaseDistance: number = 10; // Distance to player to start chasing
     chaseDuration: number = 5000; // Duration of chase after getting hit (in milliseconds)
     chaseStartTime: number = 0;
-    behavior: RandomBehaviour;
+    behavior: ZombieBehaviour;
 
     constructor(model: GLTF, player: Player) {
         super(model);
         this.setupHealthBar();
         this.setupAnimations();
-        this.behavior = new RandomBehaviour(100);
+        this.behavior = new ZombieBehaviour(100);
         this.behavior.setPlayer(player);
         this.behavior.character = this;
     }

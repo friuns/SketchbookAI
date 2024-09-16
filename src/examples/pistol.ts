@@ -74,7 +74,9 @@ class Player extends Character {
 
     public detachWeapon(): void {
         if (this.heldWeapon) {
-            this.heldWeapon.removeFromParent();
+            
+            this.heldWeapon.detach();
+            interactableObjects.push(this.heldWeapon);
             this.heldWeapon = null;
         }
     }

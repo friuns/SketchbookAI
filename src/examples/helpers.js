@@ -108,7 +108,24 @@ class BaseObject extends THREE.Object3D {
         this.body.position.set(x, y, z);
         this.position.set(x, y, z);
         this.body.updateMassProperties();
-    }   
+    }
+
+    detach() {
+        // Keep the weapon's position, scale, and rotation the same when detaching
+        const worldPosition = new THREE.Vector3();
+        const worldScale = new THREE.Vector3();
+        const worldQuaternion = new THREE.Quaternion();
+        this.getWorldPosition(worldPosition);
+        this.getWorldScale(worldScale);
+        this.getWorldQuaternion(worldQuaternion);
+        this.removeFromParent();
+        this.position.copy(worldPosition);
+        this.scale.copy(worldScale);
+        this.quaternion.copy(worldQuaternion);
+
+        world.add(this);
+    };
+    
 
     oldPosition = new THREE.Vector3();
     oldQuaternion = new THREE.Quaternion();
@@ -153,22 +170,6 @@ class BaseObject extends THREE.Object3D {
     }
 }
 
-THREE.Object3D.prototype.removeFromParent = function () {
-    //removeFromParentPreserveScaleAndKeepWorldPosition
-    if (!this.parent) return;
-    
-    this.updateWorldMatrix(true, true);
-    const worldScale = this.getWorldScale(new THREE.Vector3());
-    const worldPosition = this.getWorldPosition(new THREE.Vector3());
-    const worldQuaternion = this.getWorldQuaternion(new THREE.Quaternion());
-    
-    this.parent.remove(this);
-    this.updateWorldMatrix(true, true);
-    world.add(this);
-    this.scale.copy(worldScale);
-    this.setPosition(worldPosition);  
-    this.quaternion.copy(worldQuaternion);
-};
 
 /**
  * Automatically scales a model to a specified size.
