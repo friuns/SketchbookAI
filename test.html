@@ -49,7 +49,8 @@
         window.world = { gui }; // Add this line to create a global world object with gui
 
         // Use expose function to control both boxes with the same sliders
-        expose([box1.mesh, box2.mesh], 'Boxes');
+        expose(box1.mesh, 'Box');
+        expose(box2.mesh, 'Box');
 
         // Animation loop
         function animate() {
@@ -68,37 +69,42 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        function expose(objs, name = 'Objects') {
-            if (!Array.isArray(objs)) {
-                objs = [objs];
+        function expose(obj, name = obj.name) {
+            let folder = world.gui.__folders[name];
+            if (!folder) {
+                folder = world.gui.addFolder(name);
             }
-
-            const folder = world.gui.addFolder(name);
             const storageKey = `${name}_transform`;
             const savedValues = JSON.parse(localStorage.getItem(storageKey) || '{}');
 
             ['position', 'rotation', 'scale'].forEach(prop => {
                 ['x', 'y', 'z'].forEach(axis => {
-                    const name = `${prop.charAt(0).toUpperCase() + prop.slice(1)} ${axis.toUpperCase()}`;
-                    const controller = folder.add(objs[0][prop], axis, -10.0, 10.0, 0.01).name(name);
+                    const controlName = `${prop.charAt(0).toUpperCase() + prop.slice(1)} ${axis.toUpperCase()}`;
+                    let controller = folder.__controllers.find(c => c.property === axis && c.__li.innerText.includes(controlName));
+                    
+                    if (!controller) {
+                        controller = folder.add(obj[prop], axis, -10.0, 10.0, 0.01).name(controlName);
+                    }
 
-                    if (savedValues[name] !== undefined) {
-                        objs.forEach(obj => {
-                            obj[prop][axis] = savedValues[name];
-                        });
+                    if (savedValues[controlName] !== undefined) {
+                        obj[prop][axis] = savedValues[controlName];
                         controller.updateDisplay();
                     }
 
                     controller.onChange(value => {
-                        objs.forEach(obj => {
-                            obj[prop][axis] = value;
-                        });
-                        savedValues[name] = value;
+                        savedValues[controlName] = value;
                         localStorage.setItem(storageKey, JSON.stringify(savedValues));
+                        
+                        // Update all objects with the same name
+                        scene.traverse((child) => {
+                            if (child.isObject3D && child !== obj && child[prop]) {
+                                child[prop][axis] = value;
+                            }
+                        });
                     });
                 });
             });
-            return objs;
+            return obj;
         }
     </script>
 </body>
