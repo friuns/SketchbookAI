@@ -4,7 +4,7 @@
        
     ],
     "exclude": [
-        "src/examples"
+        "src/main/",
     ],
     "compilerOptions": {
         "module": "commonjs",

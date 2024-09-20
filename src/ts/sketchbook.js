@@ -15,13 +15,19 @@ globalThis.FollowTarget = FollowTarget;
 globalThis.FollowPath = FollowPath;
 globalThis.RandomBehaviour = RandomBehaviour;
 
-import * as Airplane from './vehicles/Airplane';
-globalThis.Airplane = Airplane;
 
 import {Car} from './vehicles/Car';
 globalThis.Car = Car;
+import {MyCar} from './vehicles/MyCar';
+globalThis.MyCar = MyCar;
 import {Helicopter} from './vehicles/Helicopter';
 globalThis.Helicopter = Helicopter;
+import {Vehicle} from './vehicles/Vehicle';
+globalThis.Vehicle = Vehicle;
+import {Airplane} from './vehicles/Airplane';
+globalThis.Airplane = Airplane;
+
+
 import {Wheel} from './vehicles/Wheel';
 globalThis.Wheel = Wheel;
 import {VehicleSeat} from './vehicles/VehicleSeat';
@@ -75,9 +81,10 @@ globalThis.VectorSpringSimulator = VectorSpringSimulator;
 
 
 
-globalThis.CarPrototype = Car.prototype
-import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils';
 globalThis.SkeletonUtils = SkeletonUtils;
+
 
 import Swal from 'sweetalert2';
 globalThis.Swal = Swal.mixin({

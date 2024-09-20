@@ -45,9 +45,11 @@
     "@isomorphic-git/lightning-fs": "^4.6.0",
     "@tweenjs/tween.js": "^25.0.0",
     "cannon-es": "^0.20.0",
+    "diff": "^7.0.0",
     "isomorphic-git": "^1.27.1",
     "jquery": "^3.6.0",
     "lodash": "^4.17.21",
+    "peerjs": "^1.5.4",
     "sweetalert2": "^11.4.37",
     "three": "^0.152.0",
     "three-csm": "^2.0.0"

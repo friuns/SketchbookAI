@@ -13,6 +13,8 @@ new Vue({
     },
     mounted() {
         this.initializeEditor();
+        // Add event listener for window resize
+        window.addEventListener('resize', this.resizeEditor);
     },
     methods: {
         async initializeEditor() {
@@ -21,13 +23,12 @@ new Vue({
                 let classNames = await (fetch('paths.txt').then(r => r.text()));
                 classNames = classNames.replaceAll("\\", "/").replaceAll("\r", "");
                 classNames = classNames.split('\n');
-                classNames.push("src/examples/helpers.js");
+                classNames.push("src/main/helpers/helpers.js");
                 classNames.push("src/utils.js");                    
                 const LoadClass = async (className) => {
 
                     let three = className.includes("node_modules/@types/three/");
-                    if (!className.includes("build/types/") && !three &&
-                     !className.startsWith("src/") &&
+                    if (!className.includes("build/types/") && !three && !className.includes("peerjs/dist") && !className.startsWith("src/") &&
                      //!className.includes("tween.d.ts") && 
                      !className.includes("sweetalert2.d.ts")) return;
                     const text = await (await fetch(className)).text();
@@ -51,6 +52,8 @@ new Vue({
                     language: 'typescript',
                     theme: 'vs-dark',
                     readOnly: globalThis.isMobile, // Make editor readonly if on mobile
+                    // Add the following line to disable the F12 key override
+                   // contextmenu: false,
                 });
                 
 
@@ -75,7 +78,12 @@ new Vue({
             chat.variant.files[0].content = code.replaceAll("export {}","");
             setTimeout(() => Eval(code), 100);
             this.toggleEditor();            
-        }
+        },
+        resizeEditor() {
+            if (codeEditor && this.showEditor) {
+                codeEditor.layout();
+            }
+        },
     }
 });
 

@@ -126,7 +126,7 @@ let chat = {
     },
     async Clear() {
         this.variant.content = '';
-        const scriptContent = await fetch("src/" + codeFile).then(response => response.text());
+        const scriptContent = await fetch("src/" + settings.codeFile).then(response => response.text());
         this.variant.files = [new VariantFile('script.js', scriptContent)];
     },
     floatingCode: '',
@@ -144,8 +144,16 @@ let chat = {
         this.abortController = new AbortController();    
         this.isLoading = true;
         
+        // Read file names from paths.txt that start with src\ts
+        const response = await fetch('paths.txt');
+        const pathsContent = await response.text();
+        const srcTsFiles = pathsContent.split('\n')
+            .filter(path => path.trim().startsWith('src\\ts'))
+            .map(path => path.trim());
+        
+        
         try {
-            const fileNames = [
+            const srcFiles = [
                 'build/types/world/World.d.ts',
                 'build/types/characters/Character.d.ts',
                 'build/types/interfaces/ICharacterAI.d.ts',
@@ -156,36 +164,53 @@ let chat = {
                 'build/types/core/KeyBinding.d.ts',
                 //'src/ts/enums/CharacterAnimations.ts',                
                 'src/ts/characters/character_ai/FollowTarget.ts',
-                'src/ts/characters/character_ai/RandomBehaviour.ts',
+                'src/ts/characters/character_ai/RandomBehaviour.ts',                
+            ]
+                
+            const examples = [
              //   'node_modules/three/src/core/Object3D.d.ts',
                 //'src/ts/core/InputManager.ts',
-                'src/examples/helpers.js',                
+                
                 //'src/examples/rocketLauncher.md',
                 //...(await fetchFilesFromDir('src/examples','js')),                
                 //  ...(await fetchFilesFromDir('src/examples', 'md'))
-                'src/examples/rocketLauncher.ts',
-                'src/examples/minecraft.ts',
-                'src/examples/dialog.ts',
-                'src/examples/pistol.ts',                
-                'src/examples/carExample.ts'
-            ];
+            'src/main/helpers/helpers.js',
+            'src/main/helpers/MyCar.ts',
+            'src/main/examples/rocketLauncher.ts',
+            'src/main/examples/minecraft.ts',
+            'src/main/examples/dialog.ts',
+            'src/main/examples/pistol.ts',
+            'src/main/examples/carExample.ts',
+            'src/ts/vehicles/MyCar.ts',
+            'src/main/examples/carBazooka.ts',
+        ];
             
-            const fetchPromises = fileNames.map(path => 
-                fetch(path).then(response => response.text()).catch(e => {
-                    alert("Error fetching file: " + e + " " + path);
-                    return '';
-                }).then(content => { 
-                    if (path.includes("example") && !path.includes("helpers.js") && (path.includes(".js") || path.includes(".ts")))
-                        content = content.split('\n').map(line => `// ${line}`).join('\n');
-                    //  content = `/* ${content} */`; 
-                    content = content.replace(/^.*\bprivate\b.*$/gm, '');
-                    return { name: path, content: content };
-                 })
-            );
+            async function fetchAndProcessFiles(fileNames) {
+                const fetchPromises = fileNames.map(async path => {
+                    try {
+                        const response = await fetch(path);
+                        let content = await response.text();
+                        
+                        
+                        if (path.includes("example") && !path.includes("helpers.js") && (path.endsWith(".js") || path.endsWith(".ts"))) {
+                            content = content.split('\n').map(line => `// ${line}`).join('\n');
+                        }
+                        
+                        content = content.replace(/^.*\bprivate\b.*$/gm, '');
+                        return { name: path, content: content };
+                    } catch (e) {
+                        alert("Error fetching file: " + e + " " + path);
+                        return { name: path, content: '' };
+                    }
+                });
+                
+                const files = await Promise.all(fetchPromises);
+                return files.map(file => `<file name="${file.name}">\n${file.content}\n</file>`).join('\n\n');
+            }
             
-            let filesMessage = (await Promise.all(fetchPromises)).map(file => `<file name="${file.name}">\n${file.content}\n</file>`).join('\n\n');
+            
 
-            filesMessage += Object.entries(files).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n');
+            
             
             // Create a string with previous user messages
             const previousUserMessages = chat.messageLog.length && ("<Previous_user_messages>\n" + chat.messageLog
@@ -202,8 +227,17 @@ let chat = {
                     messages: [
                     //    { role: "system", content: settings.rules  },
                         //{ role: "assistant", content: `When user says: spawn or add object, then spawn it at near player position: ${playerLookPoint}` },
-                        { role: "system", content: filesMessage },
-                        { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite and ucomment current code to accomplish user complain: ${this.params.lastText}` }
+                        { role: "system", content: "Note: examples are not included in source code\n" + await fetchAndProcessFiles(examples) },
+                        { role: "system", content:
+                             await fetchAndProcessFiles(srcFiles) +
+                           //  "\nNote: examples are not included in source code\n"+
+                           //  await fetchAndProcessFiles(examples) +
+                             Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n') },
+                        { role: "system", content: await fetchAndProcessFiles(srcTsFiles) },
+                        { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite and ucomment current code to accomplish user complain: ${this.params.lastText}` },
+                        //{ role: "user", content: `Improve last user complain create plan how you would implement it` },
+                        //{ role: "user", content: `Reflect write chain of though how you failed to implement code and what you need to implement it correctly` },
+                        //Understanding the Problem,Thinking through a Solution, breakdown of the challenges
                     ],
                     signal: this.abortController.signal
                 });
@@ -262,10 +296,11 @@ let chat = {
         }
         this.floatingCode = content;
 
-        const code = variant.files[0].content;
+        const code = variant.files[0]?.content;        
         ResetState();
         await new Promise(resolve => setTimeout(resolve, 100));
         await Eval(code);
+        console.log(content);
     },
 
     // Add these new methods

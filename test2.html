@@ -1,85 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Load Git History from ZIP</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-  <script type="module">
-    import isomorphicGit from 'https://cdn.jsdelivr.net/npm/isomorphic-git@1.27.1/+esm'
-    globalThis.git = isomorphicGit;
-    </script>
-  <script src="https://cdn.jsdelivr.net/npm/@isomorphic-git/lightning-fs@4.6.0/dist/lightning-fs.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Load GLB and Show Bounding Box</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-  <h1>Git History from ZIP</h1>
-  <button id="loadZip">Load Git History</button>
-  <pre id="output"></pre>
-
-  <script>
-    document.getElementById('loadZip').addEventListener('click', async function () {
-      const url = 'git.zip'; // Replace with the actual ZIP URL
-      const outputElement = document.getElementById('output');
-      outputElement.textContent = 'Fetching ZIP...';
-
-      try {
-        // Step 1: Fetch the ZIP file
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Network response was not ok');
-
-        // Step 2: Get the ZIP data as a Blob
-        const blob = await response.blob();
-
-        // Step 3: Initialize JSZip and load the ZIP data
-        const zip = await JSZip.loadAsync(blob);
-
-        // Step 4: Set up an in-memory file system (using LightningFS)
-        const fs = new LightningFS('fs');
-        const pfs = fs.promises;
-
-        // Step 5: Extract ZIP contents into the virtual filesystem
-        outputElement.textContent = 'Extracting ZIP...';
-
-        for (const [filename, file] of Object.entries(zip.files)) {
-          outputElement.textContent += `\nExtracting: ${filename}`;
-          if (file.dir) {
-            try {
-              await pfs.mkdir('/' + filename, { recursive: true });
-            } catch (error) {
-              if (error.code !== 'EEXIST') throw error;
+    <script type="importmap2">
+        {
+            "imports": {
+                "three":          "https://cdn.jsdelivr.net/npm/three@0.118.0/build/three.module.js",
+                "GLTFLoader":     "https://cdn.jsdelivr.net/npm/three@0.118.0/examples/jsm/loaders/GLTFLoader.js",
+                "OrbitControls":  "https://cdn.jsdelivr.net/npm/three@0.118.0/examples/jsm/controls/OrbitControls.js"
             }
-          } else {
-            const content = await file.async('uint8array');
-            const dirPath = '/' + filename.split('/').slice(0, -1).join('/');
-            try {
-              await pfs.mkdir(dirPath, { recursive: true });
-            } catch (error) {
-              if (error.code !== 'EEXIST') throw error;
-            }
-            await pfs.writeFile('/' + filename, content);
-          }
+        }
+    </script>
+    <script src="build/sketchbook.min.js"></script>
+    <script type="module">
+        //import * as THREE from 'three';
+        //import { GLTFLoader } from 'GLTFLoader';
+        //import { OrbitControls } from 'OrbitControls';
+
+        let scene, camera, renderer, controls, model, mixer, clock, rootBone;
+
+        init();
+        loadGLBModel();
+        animate();
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xeeeeee);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 55);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Orbit Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.25;
+            controls.enableZoom = true;
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5).normalize();
+            scene.add(light);
+
+            // Clock for animation
+            clock = new THREE.Clock();
         }
 
-        // Step 6: Use isomorphic-git to read the commit history from the extracted `.git` folder
-        outputElement.textContent += '\nReading Git history...';
+        function loadGLBModel() {
+            // GLTFLoader to load .glb files
+            const loader = new GLTFLoader();
+            loader.load('build/assets/tree.glb', function (gltf) {
+                model = gltf.scene;
+                model.updateMatrixWorld(true,true);
+                let tf = SkeletonUtils.clone(gltf.scene);
+                tf.updateMatrixWorld(true,true);
+                const combinedBoundingBox = new THREE.Box3().setFromObject(tf);
 
-        const commits = await git.log({
-          fs,
-          dir: '/',
-          depth: 10, // Adjust depth for more commits
+                // Log the size of the combined bounding box
+                console.log('Combined Bounding Box Size:', combinedBoundingBox.getSize(new THREE.Vector3()));
+                scene.add(tf);
+                // Visualize the combined bounding box with BoxHelper
+                const boxHelper = new THREE.BoxHelper(new THREE.Mesh(new THREE.BoxGeometry(
+                    combinedBoundingBox.max.x - combinedBoundingBox.min.x,
+                    combinedBoundingBox.max.y - combinedBoundingBox.min.y,
+                    combinedBoundingBox.max.z - combinedBoundingBox.min.z
+                )), 0xff0000);
+
+                boxHelper.position.set(
+                    (combinedBoundingBox.max.x + combinedBoundingBox.min.x) / 2,
+                    (combinedBoundingBox.max.y + combinedBoundingBox.min.y) / 2,
+                    (combinedBoundingBox.max.z + combinedBoundingBox.min.z) / 2
+                );
+
+                scene.add(boxHelper);
+
+                console.log('Combined Bounding Box:', combinedBoundingBox);
+
+                // Find the root bone (the bone that actually moves)
+                let potentialRootBones = [];
+                tf.traverse((object) => {
+                    if (object.isBone) {
+                        if (object.name.toLowerCase().includes('hips') || object.name.toLowerCase().includes('root')) {
+                            potentialRootBones.push(object);
+                        }
+                    }
+                });
+
+                if (potentialRootBones.length > 0) {
+                    // Prioritize 'hips' over 'root' if both exist
+                    rootBone = potentialRootBones.find(bone => bone.name.toLowerCase().includes('hips')) || potentialRootBones[0];
+                    console.log('Root bone found:', rootBone.name);
+                } else {
+                    console.warn('No root bone found.');
+                }
+
+                if (!rootBone) {
+                    console.warn('Root bone not found. Using the first bone in the skeleton.');
+                    tf.traverse((object) => {
+                        if (object.isBone && !rootBone) {
+                            rootBone = object;
+                        }
+                    });
+                }
+
+                // Set up animation
+                mixer = new THREE.AnimationMixer(tf);
+                if (gltf.animations && gltf.animations.length > 0) {
+                    const firstAnimation = gltf.animations[1];
+                    const action = mixer.clipAction(firstAnimation);
+                    action.setLoop(THREE.LoopRepeat);
+                    action.play();
+                }
+            }, undefined, function (error) {
+                console.error(error);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            if (mixer) {
+                mixer.update(delta);
+
+                // Store the initial position of the root bone
+                if (rootBone && !rootBone.userData.initialPosition) {
+                    rootBone.userData.initialPosition = rootBone.position.clone();
+                }
+
+                // Reset the root bone position to its initial position
+                if (rootBone && rootBone.userData.initialPosition) {
+                    rootBone.position.copy(rootBone.userData.initialPosition);
+                }
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        // Step 7: Display commit history
-        outputElement.textContent += '\nCommit History:\n';
-        commits.forEach(commit => {
-          outputElement.textContent += `Commit: ${commit.oid}\nAuthor: ${commit.commit.author.name}\nDate: ${commit.commit.author.timestamp}\nMessage: ${commit.commit.message}\n\n`;
-        });
-
-      } catch (error) {
-        outputElement.textContent += `\nError: ${error.message}`;
-        console.error(error);
-      }
-    });
-  </script>
+    </script>
 </body>
 </html>

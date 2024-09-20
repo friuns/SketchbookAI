@@ -6,6 +6,7 @@ import { World } from '../world/World';
 import { Side } from '../enums/Side';
 import { Object3D } from 'three';
 import { Space } from '../enums/Space';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils';
 
 export function createCapsuleGeometry(radius: number = 1, height: number = 2, N: number = 32): THREE.BufferGeometry 
 {
@@ -395,4 +396,20 @@ export function isActive(mixer: any): boolean
 		}
 	}
 	return false;
+}
+
+/**
+ * Creates a deep clone of a GLTF object.
+ * @param {GLTF} gltf - The GLTF object to clone.
+ * @returns {GLTF} A new GLTF object with a cloned scene.
+ */
+export function cloneGltf(gltf) {
+    const clonedScene = SkeletonUtils.clone(gltf.scene);
+	clonedScene.updateMatrixWorld(true);
+    return {
+        ...gltf,
+        animations: gltf.animations.map(a => ({ ...a })),
+        original: gltf,
+        scene: clonedScene,
+    };
 }

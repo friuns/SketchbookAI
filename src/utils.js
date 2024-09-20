@@ -346,7 +346,7 @@ function compileTypeScript(code) {
             target: ts.ScriptTarget.ES2015,
             inlineSourceMap: true,
             inlineSources: true,
-            sourceRoot: 'C:/Users/friuns/Documents/Sketchbook/src/examples'
+            sourceRoot: settings.localSrc
         }
     });
 

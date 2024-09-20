@@ -60,8 +60,7 @@ export class World
 	public readonly vehicles: Vehicle[] = [];
 	public readonly paths: Path[] = [];
 	public scenarioGUIFolder: any;
-	public updatables: IUpdatable[] = [];
-	public objects: THREE.Object3D[] = [];
+	public updatables: IUpdatable[] = [];	
 	public loadingManager: LoadingManager; 
 	private lastScenarioID: string;
 
@@ -321,14 +320,19 @@ export class World
 	{
 		if(worldEntity.addToWorld)
 		{
-			worldEntity.addToWorld(this);
+			worldEntity.addToWorld(this);			
 			this.registerUpdatable(worldEntity);
 		}
 		else
 		{
 			this.graphicsWorld.add(worldEntity);
+			if(worldEntity.update)
+			{
+				this.registerUpdatable(worldEntity);
+			}
 		}
-		this.objects.push(worldEntity);
+
+		
 	}
 
 	public registerUpdatable(registree: IUpdatable): void

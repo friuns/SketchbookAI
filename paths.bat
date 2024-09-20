@@ -6,7 +6,7 @@ cd /d "%~dp0"
 echo. > paths.txt
 
 :: Search for all .d.ts files and append their relative paths to paths.txt
-for /r %%f in (*.d.ts) do (
+for /r %%f in (*.ts) do (
     set "relativePath=%%f"
     setlocal enabledelayedexpansion
     :: Remove the base directory path from the full path
@@ -16,3 +16,8 @@ for /r %%f in (*.d.ts) do (
 )
 
 echo All relative .d.ts file paths have been written to paths.txt.
+
+for %%f in (src\examples\*.ts) do (
+    :: Generate the diff and save it to a .txt file
+    git log -p -n 100 -- %%f > src\examples\diffs\%%~nf.ts.txt
+)

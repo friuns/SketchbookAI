@@ -34,32 +34,67 @@ CANNON.Body.prototype.addEventListener = (function(originalAddEventListener) {
     };
 })(CANNON.Body.prototype.addEventListener);
 
+class GLTFMaterialsPbrSpecularGlossinessExtension {
+    constructor(parser) {
+        this.parser = parser;
+        this.name = 'KHR_materials_pbrSpecularGlossiness';
+    }
+
+    getMaterialType(materialIndex) {
+        return THREE.MeshStandardMaterial;
+    }
+
+    extendMaterialParams(materialIndex, materialParams) {
+        const parser = this.parser;
+        const materialDef = parser.json.materials[materialIndex];
+
+        if (!materialDef.extensions || !materialDef.extensions[this.name]) {
+            return Promise.resolve();
+        }
+
+        const pbrSpecularGlossiness = materialDef.extensions[this.name];
+
+        materialParams.color = new THREE.Color(1, 1, 1);
+        materialParams.opacity = (pbrSpecularGlossiness.diffuseFactor !== undefined) ? pbrSpecularGlossiness.diffuseFactor[3] : 1.0;
+
+        materialParams.roughness = 1.0 - (pbrSpecularGlossiness.glossinessFactor !== undefined ? pbrSpecularGlossiness.glossinessFactor : 1.0);
+        materialParams.metalness = 0.0;
+
+        return Promise.all([
+            pbrSpecularGlossiness.diffuseTexture !== undefined ?
+                parser.assignTexture(materialParams, 'map', pbrSpecularGlossiness.diffuseTexture) :
+                Promise.resolve(),
+            pbrSpecularGlossiness.specularGlossinessTexture !== undefined ?
+                parser.assignTexture(materialParams, 'glossinessMap', pbrSpecularGlossiness.specularGlossinessTexture) :
+                Promise.resolve()
+        ]);
+    }
+}
+
+
+
 (function GLTFLoader_LoadCache() {
     const gltfCache = new Map();
     const originalLoad = GLTFLoader.prototype.load;
     
-    const cloneGltf = (gltf) => {
-        const clonedScene = SkeletonUtils.clone(gltf.scene);
-        clonedScene.updateMatrixWorld(true, true);
-        return {
-            ...gltf,
-            animations: gltf.animations.map(a => ({ ...a })),
-            original: gltf,
-            scene: clonedScene,
-        };
-    };
-
+    
     GLTFLoader.prototype.load = function (url, onLoad, onProgress, onError) {
+        if(!this.registered)
+        {
+            this.registered=true;
+            this.register(parser => new GLTFMaterialsPbrSpecularGlossinessExtension(parser));
+        }
+
         if (gltfCache.has(url)) {
             const gltf = gltfCache.get(url);
-            if (onLoad) onLoad(cloneGltf(gltf));
+            if (onLoad) onLoad(Utils.cloneGltf(gltf));
             return;
         }
 
         originalLoad.call(this, url,
             (gltf) => {
                 gltfCache.set(url, gltf);
-                if (onLoad) onLoad(cloneGltf(gltf));
+                if (onLoad) onLoad(Utils.cloneGltf(gltf));
             },
             onProgress,
             onError
@@ -68,7 +103,8 @@ CANNON.Body.prototype.addEventListener = (function(originalAddEventListener) {
 })();
 
 THREE.Cache.enabled=true;
-var files = {};
+var glbFiles = {};
+
 (function GLTFLoader_LoadNotFound() {
     const originalLoad = GLTFLoader.prototype.load;
     GLTFLoader.prototype.load = function (url, onLoad, onProgress, onError) {
@@ -79,13 +115,13 @@ var files = {};
                 GetSpawnGLBCode(gltf,url);
                 //Object3DToHierarchy(gltf) + (animations || '');
 
-            if (!/(airplane|boxman|car|heli|world|airplane)\.glb/.test(url))
-                files[url] = { name: url, content: content };
+            if (!/(airplane|boxman|car|heli|world|airplane|notfound)\.glb/.test(url))
+                glbFiles[url] = { name: url, content: content };
             // Call the original onLoad with the modified gltf
             if (onLoad) onLoad(gltf);
 
         }, onProgress, (error) => {            
-            console.error(error);
+            
             originalLoad.call(this, 'notfound.glb', onLoad, onProgress, onError);
             let variant = chat.currentVariant;
             const fileName = url.split('/').pop().split('.')[0];
