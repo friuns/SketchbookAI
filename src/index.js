@@ -12,8 +12,8 @@ class BotMessage {
     constructor() {
         this.content = '';
         this.lastError = null;
-        /** @type {Array<VariantFile>} */ 
-        this.files = [];        
+        /** @type {Array<VariantFile>} */
+        this.files = [];
         this.processing = false;
         Vue.observable(this);
     }
@@ -31,31 +31,31 @@ let chat = {
     isLoading: false,
     params: {
         chatId: '',
-        chatIdChanged: function(){
+        chatIdChanged: function () {
             console.log('codeChanged');
             //Eval(chat.params.code);
         },
-        lastText: ''        
+        lastText: ''
     },
-    isCursorLocked:false,
-    messageLog:[],
-    get isMobile(){
+    isCursorLocked: false,
+    messageLog: [],
+    get isMobile() {
         return window.innerWidth < 768;
     },
-    variants: [new BotMessage(),new BotMessage()],
+    variants: [new BotMessage(), new BotMessage()],
     currentVariant: 0,
-    get variant(){
+    get variant() {
         return this.variants[this.currentVariant];
     },
 
     async init() {
         document.addEventListener('pointerlockchange', () => this.isCursorLocked = !!document.pointerLockElement);
         globalThis.world = new World();
-        await world.initialize('build/assets/world.glb');        
+        await world.initialize('build/assets/world.glb');
 
         //while (!globalThis.player) { await new Promise(resolve => setTimeout(resolve, 100));}
 
-		//globalThis.SaveReset?.();
+        //globalThis.SaveReset?.();
 
 
 
@@ -78,7 +78,7 @@ let chat = {
             //world.timeScaleTarget=0
             Eval(this.variant.files[0].content);
         }, 500);
-        
+
         // Add this new event listener
         document.addEventListener('contextmenu', this.handleContextMenu.bind(this));
         document.addEventListener('click', this.hideContextMenu.bind(this));
@@ -91,7 +91,7 @@ let chat = {
             await new Promise(resolve => setTimeout(resolve, 30)); // Adjust the delay as needed for typing effect
         }
     },
-    UploadFile(){
+    UploadFile() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*'; // Only accept image files
@@ -113,12 +113,12 @@ let chat = {
 
         input.click();
     },
-    copyCodeToClipboard(variant){
-        navigator.clipboard.writeText(variant.files[0].content)
+    copyCodeToClipboard(variant) {
+        navigator.clipboard.writeText(replaceImports(variant.files[0].content))
     },
-    onClickError(){
+    onClickError() {
         this.inputText = this.params.lastText + ' \nPrevious attempt Error: ' + this.variant.lastError.message + ", do not make it again!";
-    },    
+    },
     async Clear() {
         this.variant.content = '';
         const scriptContent = await fetch("src/" + settings.codeFile).then(response => response.text());
@@ -126,21 +126,20 @@ let chat = {
     },
     floatingCode: '',
     async sendInput() {
-        
+
         this.params.lastText = this.inputText || this.params.lastText;
-        if(!this.inputText)
-        {
+        if (!this.inputText) {
             this.inputText = this.params.lastText;
             return;
         }
         Say(this.params.lastText)
         this.inputText = '';
         this.abortController?.abort();
-        this.abortController = new AbortController();    
+        this.abortController = new AbortController();
         this.isLoading = true;
-        if(this.variant == this.variants[0])
+        if (this.variant == this.variants[0])
             this.messageLog.pop();
-        
+
         // Read file names from paths.txt that start with src\ts
         const response = await fetch('paths.txt');
 
@@ -148,8 +147,8 @@ let chat = {
         const srcTsFiles = pathsContent.split('\n')
             .filter(path => path.trim().startsWith('src\\ts'))
             .map(path => path.trim());
-        
-        
+
+
         try {
             const srcFiles = [
                 'build/types/world/World.d.ts',
@@ -162,38 +161,37 @@ let chat = {
                 'build/types/core/KeyBinding.d.ts',
                 //'src/ts/enums/CharacterAnimations.ts',                
                 'src/ts/characters/character_ai/FollowTarget.ts',
-                'src/ts/characters/character_ai/RandomBehaviour.ts',                
+                'src/ts/characters/character_ai/RandomBehaviour.ts',
             ]
-                
+
             const examples = [
-             //   'node_modules/three/src/core/Object3D.d.ts',
+                //   'node_modules/three/src/core/Object3D.d.ts',
                 //'src/ts/core/InputManager.ts',
-                
+
                 //'src/examples/rocketLauncher.md',
                 //...(await fetchFilesFromDir('src/examples','js')),                
                 //  ...(await fetchFilesFromDir('src/examples', 'md'))
-            'src/main/helpers/helpers.js',
-            'src/main/helpers/MyCar.ts',
-            'src/main/examples/rocketLauncher.ts',
-            'src/main/examples/minecraft.ts',
-            'src/main/examples/dialog.ts',
-            'src/main/examples/pistol.ts',
-            'src/main/examples/carExample.ts',
-            'src/ts/vehicles/MyCar.ts',
-            'src/main/examples/carBazooka.ts',
-        ];
-            
+                'src/main/helpers/helpers.js',
+                'src/main/helpers/MyCar.ts',
+                'src/main/examples/rocketLauncher.ts',
+                'src/main/examples/minecraft.ts',
+                'src/main/examples/dialog.ts',
+                'src/main/examples/pistol.ts',
+                'src/main/examples/carExample.ts',
+                'src/ts/vehicles/MyCar.ts',
+                'src/main/examples/carBazooka.ts',
+            ];
             async function fetchAndProcessFiles(fileNames) {
                 const fetchPromises = fileNames.map(async path => {
                     try {
                         const response = await fetch(path);
                         let content = await response.text();
-                        
-                        
+
+
                         if (path.includes("example") && !path.includes("helpers.js") && (path.endsWith(".js") || path.endsWith(".ts"))) {
                             content = content.split('\n').map(line => `// ${line}`).join('\n');
                         }
-                        
+
                         content = content.replace(/^.*\bprivate\b.*$/gm, '');
                         return { name: path, content: content };
                     } catch (e) {
@@ -201,15 +199,20 @@ let chat = {
                         return { name: path, content: '' };
                     }
                 });
-                
+
                 const files = await Promise.all(fetchPromises);
+                return files;
+            }
+
+            async function fetchAndProcessFilesCombined(fileNames) {
+                let files = await fetchAndProcessFiles(fileNames);
                 return files.map(file => `<file name="${file.name}">\n${file.content}\n</file>`).join('\n\n');
             }
-            
-            
 
-            
-            
+
+
+
+
             // Create a string with previous user messages
             const previousUserMessages = chat.messageLog.length && ("<Previous_user_messages>\n" + chat.messageLog
                 .map(msg => msg.user)
@@ -220,21 +223,24 @@ let chat = {
             this.variants.length = 1;
             let updateLock = Promise.resolve();
             let abort = false;
-            await Promise.all([1,2,3,4,5].map(async (i) => {
+            await Promise.all([1, 2, 3, 4, 5].map(async (i) => {
                 const response = await getChatGPTResponse({
                     messages: [
-                    //    { role: "system", content: settings.rules  },
+                        //    { role: "system", content: settings.rules  },
                         //{ role: "assistant", content: `When user says: spawn or add object, then spawn it at near player position: ${playerLookPoint}` },
-                        { role: "system", content: "Note: examples are not included in source code\n" + await fetchAndProcessFiles(examples) },
-                        { role: "system", content:
-                             await fetchAndProcessFiles(srcFiles) +
-                           //  "\nNote: examples are not included in source code\n"+
-                           //  await fetchAndProcessFiles(examples) +
-                             Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n') },
-                        { role: "system", content: await fetchAndProcessFiles(srcTsFiles) },
-                        { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite and ucomment current code to accomplish user complain: ${this.params.lastText}` },
+                        { role: "system", content: "Note: examples are not included in source code\n" + await fetchAndProcessFilesCombined(examples) },
+                        {
+                            role: "system", content:
+                                await fetchAndProcessFilesCombined(srcFiles) +
+                                //  "\nNote: examples are not included in source code\n"+
+                                //  await fetchAndProcessFiles(examples) +
+                                Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n')
+                        },
+                        //...(await fetchAndProcessFiles(srcTsFiles)).map(a => ({ role: "system", content: `<file name="${a.name}">\n${a.content}\n</file>` })),                        
+                        { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite current code to accomplish user complain: ${this.params.lastText}` },
                         //{ role: "user", content: `Improve last user complain create plan how you would implement it` },
                         //{ role: "user", content: `Reflect write chain of though how you failed to implement code and what you need to implement it correctly` },
+
                         //Understanding the Problem,Thinking through a Solution, breakdown of the challenges
                     ],
                     signal: this.abortController.signal
@@ -244,36 +250,36 @@ let chat = {
                 botMessage.processing = true;
                 this.variants[i] = botMessage;
                 for await (const chunk of response) {
-                    botMessage.content = chunk.message.content;                   
-                    if(this.currentVariant == i)
+                    botMessage.content = chunk.message.content;
+                    if (this.currentVariant == i)
                         this.floatingCode = botMessage.content;
                 }
                 botMessage.processing = false;
                 console.log(botMessage.content);
-          
 
-                updateLock = updateLock.then(async () =>{
-                    
-                    if(abort)
-                        return;        
+
+                updateLock = updateLock.then(async () => {
+
+                    if (abort)
+                        return;
                     let variant = this.variants[i];
                     await this.switchVariant(i);
                     let startTime = Date.now();
                     while (!variant.lastError && Date.now() - startTime < 1500) {
                         await new Promise(requestAnimationFrame);
                     }
-                    if(!variant.lastError)
+                    if (!variant.lastError)
                         abort = true;
                 });
-                
+
             }));
-            
+
             console.log(chat.floatingCode)
             if (this.messageLog[this.messageLog.length - 1]?.user != this.params.lastText) {
                 this.messageLog.push({ user: this.params.lastText });
             }
         } catch (e) {
-            if(e.name == 'AbortError')
+            if (e.name == 'AbortError')
                 return;
             this.switchVariant(0);
         } finally {
@@ -282,7 +288,7 @@ let chat = {
         }
 
     },
-  
+
     async switchVariant(index) {
         console.log('switchVariant', index);
         this.currentVariant = index;
@@ -294,7 +300,7 @@ let chat = {
         }
         this.floatingCode = content;
 
-        const code = variant.files[0]?.content;        
+        const code = variant.files[0]?.content;
         ResetState();
         await new Promise(resolve => setTimeout(resolve, 100));
         await Eval(code);
@@ -350,10 +356,10 @@ let vue = InitVue(chat, { mounted: chat.init, watch: chat.watch });
 
 vue = chat = new Vue({
     el: '#app',
-    data:vue.data,
-    methods:vue.methods,
-    watch:vue.watch,
-    mounted:vue.mounted
+    data: vue.data,
+    methods: vue.methods,
+    watch: vue.watch,
+    mounted: vue.mounted
 });
 
 

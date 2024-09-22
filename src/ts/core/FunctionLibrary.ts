@@ -404,12 +404,14 @@ export function isActive(mixer: any): boolean
  * @returns {GLTF} A new GLTF object with a cloned scene.
  */
 export function cloneGltf(gltf) {
-    const clonedScene = SkeletonUtils.clone(gltf.scene);
+    const clonedScene:any = SkeletonUtils.clone(gltf.scene);
 	clonedScene.updateMatrixWorld(true);
-    return {
-        ...gltf,
-        animations: gltf.animations.map(a => ({ ...a })),
-        original: gltf,
-        scene: clonedScene,
-    };
+	clonedScene.gltf =gltf;
+	let obj = Object.assign(clonedScene, {
+		...gltf,
+		animations: gltf.animations.map(a => ({ ...a })),
+		original: gltf,
+		scene: clonedScene,
+	});
+	return obj;
 }

@@ -20,12 +20,12 @@ async function Eval(content)
         .replace(/^.*(?:world\.initialize).*$\n?/gm, '\n')
         .replace(/world\.render\(world\);/g, '\n')
         .replace(/\b(let|const)\s+(\w+)\s*=/g, 'var $2 = globalThis.$2 =')       
-        .replaceAll("instanceof THREE.Mesh ", "instanceof THREE.Group ")
+      //  .replaceAll("instanceof THREE.Mesh ", "instanceof THREE.Group ")
         
             
     
-    if (chat.currentVariant!=0)
-        console.log(content);
+    //if (chat.currentVariant!=0)
+      //  console.log(content);
     if(content.includes("world.update = "))
         throw new Error("direct assign world.update = function(){} is not allowed, use addMethodListener");
     lastEvalCode = code;

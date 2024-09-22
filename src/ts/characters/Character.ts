@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import * as _ from 'lodash';
 import * as Utils from '../core/FunctionLibrary';
-import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { KeyBinding } from '../core/KeyBinding';
 import { VectorSpringSimulator } from '../physics/spring_simulation/VectorSpringSimulator';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils';
 import { RelativeSpringSimulator } from '../physics/spring_simulation/RelativeSpringSimulator';
 import { Idle } from './character_states/Idle';
 import { EnteringVehicle } from './character_states/vehicles/EnteringVehicle';
@@ -132,15 +132,21 @@ export class Character extends THREE.Object3D implements IWorldEntity
 	private preStep: () => void;
 	private postStep: () => void;
 
-	constructor(gltf: GLTF)
+	constructor(object3D: THREE.Object3D)
 	{
 		super();
+		const anyObject: any = object3D;
+		if(anyObject.scene)
+			object3D = anyObject.scene;
+
+		// Replace gltf with object3D
+		object3D= SkeletonUtils.clone(object3D);
+
+		this.readCharacterData(object3D);
+
 		
-		gltf = Utils.cloneGltf(gltf);
-		this.readCharacterData(gltf);
-		
-		this.mixer = new THREE.AnimationMixer(gltf.scene);
-		this.setAnimations(gltf.animations);
+		this.mixer = new THREE.AnimationMixer(object3D);
+		this.setAnimations(object3D.animations);
 
 		// The visuals group is centered for easy character tilting
 		this.tiltContainer = new THREE.Group();
@@ -150,7 +156,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		this.modelContainer = new THREE.Group();
 		this.modelContainer.position.y = -0.57;
 		this.tiltContainer.add(this.modelContainer);
-		this.modelContainer.add(gltf.scene);
+		this.modelContainer.add(object3D);
 
 		this.velocitySimulator = new VectorSpringSimulator(60, this.defaultVelocitySimulatorMass, this.defaultVelocitySimulatorDamping);
 		this.rotationSimulator = new RelativeSpringSimulator(60, this.defaultRotationSimulatorMass, this.defaultRotationSimulatorDamping);
@@ -295,7 +301,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 
 	public readCharacterData(gltf: any): void
 	{
-		gltf.scene.traverse((child) => {
+		gltf.traverse((child) => {
 
 			if (child.isMesh)
 			{
@@ -554,7 +560,7 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		if (important)
 			this.importantAction = action
 		if (action === null) {
-			console.warn(`Animation ${clipName} not found!`);
+			//console.warn(`Animation ${clipName} not found!`);
 			return 0;
 		}
 

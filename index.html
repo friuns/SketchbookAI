@@ -158,22 +158,22 @@ input::-ms-reveal {
                     </button>
                 </div>
                 <div class="flex items-center">
-                    <form action="#" class="relative flex-grow" @submit.prevent="sendInput">
-                        <input type="text" id="gpt-input" v-model="inputText" :placeholder="params.lastText || 'What would you like to create?'" class="input input-bordered w-full max-w-xs pr-10" list="suggestions" />
+                    <div class="relative flex-grow">
+                        <input type="text" id="gpt-input" v-model="inputText" :placeholder="params.lastText || 'What would you like to create?'" class="input input-bordered w-full max-w-xs pr-10" list="suggestions" @keydown.enter="sendInput" />
                         <datalist id="suggestions">
                             <option v-for="suggestion in suggestions" :key="suggestion" :value="suggestion"></option>
                         </datalist>
                         <button id="stop-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-if="isLoading" @click="abortController?.abort()">
                             <i class="fas fa-stop"></i>
                         </button>
-                        <button id="send-button" @mousedown="if(isMobile) inputText = ''" type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-else-if="inputText" style="background-color: rgba(255, 255, 255, 0);">
+                        <button id="send-button" @mousedown="if(isMobile) inputText = ''" @click="sendInput" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-else-if="inputText" style="background-color: rgba(255, 255, 255, 0);">
                             <span class="hidden md:inline"><i class="fas fa-paper-plane"></i></span>
                             <span class="md:hidden"><i class="fas fa-eraser"></i></span>
                         </button>
-                        <button id="resend-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-else-if="params.lastText" >
+                        <button id="resend-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent border-none" v-else-if="params.lastText" @click="sendInput">
                             <i class="fas fa-redo-alt"></i>
                         </button>
-                    </form>
+                    </div>
                     <button v-if="variant.lastError" class="bg-transparent border-none ml-2" @click="onClickError()" :title="variant.lastError">
                         <i class="fas fa-exclamation-circle" style="color: red;"></i>
                     </button>

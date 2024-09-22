@@ -20,8 +20,17 @@ CANNON.Body = (function(Body) {
     return ExtendedBody;
 })(CANNON.Body);
 
-CANNON.Body.prototype.addEventListener = (function(originalAddEventListener) {
+THREE.Object3D.prototype.clone = (function (originalClone) {
+    return function () {
+        let oldClone = this.clone;
+        this.clone = originalClone;
+        let clone = SkeletonUtils.clone(this);
+        this.clone = clone.clone = oldClone;        
+        return clone;
+    };
+})(THREE.Object3D.prototype.clone);
 
+CANNON.Body.prototype.addEventListener = (function(originalAddEventListener) {
     return function(type, listener) {
         let animationFrameId;
         originalAddEventListener.call(this, type, ()=>{

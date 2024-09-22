@@ -63,7 +63,6 @@
             };
 
             gui.add(rotationControl, 'speed', 0, 0.1, 0.001).name('Rotation Speed');
-            gui.remember(rotationControl); // Remember the rotation speed
 
             // Animation loop
             function animate() {
@@ -81,6 +80,7 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
+
 
         </script>
     </body>

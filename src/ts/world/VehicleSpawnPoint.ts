@@ -46,9 +46,10 @@ export class VehicleSpawnPoint implements ISpawnPoint
 			{
 				loadingManager.loadGLTF('build/assets/boxman.glb', (charModel) =>
 				{
-					let character = new Character(charModel);
+					let character = new Character(charModel.scene);
 					world.add(character);
 					character.teleportToVehicle(vehicle, vehicle.seats[0]);
+
 
 					if (this.driver === 'player')
 					{
