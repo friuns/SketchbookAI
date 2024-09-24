@@ -710,22 +710,20 @@
 
     var Controller = function () {
         function Controller(object, property) {
-
             classCallCheck(this, Controller);
             this.initialValue = object[property];
             this.domElement = document.createElement('div');
             this.object = object;
             this.property = property;
-            this.__onChange = [];
+            this.__onChange = undefined;
             this.__onFinishChange = undefined;
         }
         createClass(Controller, [{
             key: 'onChange',
             value: function onChange(fnc) {
-                this.__onChange.push(fnc);
+                this.__onChange = fnc;
                 return this;
             }
-
         }, {
             key: 'onFinishChange',
             value: function onFinishChange(fnc) {
@@ -737,13 +735,9 @@
             value: function setValue(newValue) {
                 this.object[this.property] = newValue;
                 if (this.__onChange) {
-                    this.__onChange.forEach(function(fnc) {
-                        fnc.call(this, newValue);
-                    }, this);
+                    this.__onChange.call(this, newValue);
                 }
                 this.updateDisplay();
-
-
                 return this;
             }
         }, {
