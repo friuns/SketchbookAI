@@ -3,112 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom dat.GUI NumberController</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-    </style>
+    <title>Image Upscaler</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
 </head>
-<body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
-    <script>
-    // Extend NumberController to create a custom RangeController
-dat.gui.RangeController = function(object, property, min, max, step) {
-    dat.controllers.NumberController.call(this, object, property, min, max, step);
+<body class="bg-gray-100">
+    <div id="app" class="container mx-auto p-4">
+        <h1 class="text-3xl font-semibold mb-4">Image Upscaler</h1>
+        <div class="bg-white rounded-md shadow-md p-4 mb-4">
+            <div class="mb-4">
+                <label for="imageInput" class="block mb-2">Upload Image</label>
+                <input type="file" id="imageInput" @change="handleImageUpload" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div v-show="uploadedImage" class="mb-4">
+                <img :src="uploadedImage" class="max-h-64 mx-auto">
+            </div>
+            <div v-show="upscaledImage" class="mb-4">
+                <img :src="upscaledImage" class="max-h-64 mx-auto">
+            </div>
+            <button @click="upscaleImage" v-show="uploadedImage" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Upscale Image</button>
+        </div>
+    </div>
 
-    var _this = this;
+    <script type="module">
+        new Vue({
+            el: '#app',
+            data: {
+                uploadedImage: null,
+                upscaledImage: null
+            },
+            methods: {
+                async handleImageUpload(event) {
+                    const file = event.target.files[0];
+                    this.uploadedImage = URL.createObjectURL(file);
+                },
+                async upscaleImage() {
+                    const { HfInference } = await import('https://esm.sh/@huggingface/inference');
+                    const hf = new HfInference('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');
 
-    this.__min = min;
-    this.__max = max;
-    this.__step = step;
-
-    this.__input = document.createElement('div');
-    this.__input.classList.add('slider');
-
-    this.__minHandle = document.createElement('div');
-    this.__maxHandle = document.createElement('div');
-    this.__range = document.createElement('div');
-
-    this.__minHandle.classList.add('handle', 'min-handle');
-    this.__maxHandle.classList.add('handle', 'max-handle');
-    this.__range.classList.add('range');
-
-    this.__input.appendChild(this.__minHandle);
-    this.__input.appendChild(this.__maxHandle);
-    this.__input.appendChild(this.__range);
-
-    this.domElement.appendChild(this.__input);
-
-    this.updateDisplay();
-
-    function onMouseDrag(e) {
-        e.preventDefault();
-
-        var rect = _this.__input.getBoundingClientRect();
-        var x = (e.clientX - rect.left) / rect.width;
-
-        x = Math.max(0, Math.min(x, 1));
-
-        var value = _this.__min + (_this.__max - _this.__min) * x;
-        value = Math.round(value / _this.__step) * _this.__step;
-
-        if (e.target === _this.__minHandle) {
-            _this.object[_this.property][0] = Math.min(value, _this.object[_this.property][1]);
-        } else {
-            _this.object[_this.property][1] = Math.max(value, _this.object[_this.property][0]);
-        }
-
-        _this.updateDisplay();
-    }
-
-    function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseDrag);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    this.__minHandle.addEventListener('mousedown', function(e) {
-        document.addEventListener('mousemove', onMouseDrag);
-        document.addEventListener('mouseup', onMouseUp);
-    });
-
-    this.__maxHandle.addEventListener('mousedown', function(e) {
-        document.addEventListener('mousemove', onMouseDrag);
-        document.addEventListener('mouseup', onMouseUp);
-    });
-};
-
-dat.gui.RangeController.prototype = Object.create(dat.controllers.NumberController.prototype);
-
-dat.gui.RangeController.prototype.updateDisplay = function() {
-    var min = this.object[this.property][0];
-    var max = this.object[this.property][1];
-
-    var minPercentage = (min - this.__min) / (this.__max - this.__min) * 100;
-    var maxPercentage = (max - this.__min) / (this.__max - this.__min) * 100;
-
-    this.__minHandle.style.left = minPercentage + '%';
-    this.__maxHandle.style.left = maxPercentage + '%';
-    this.__range.style.left = minPercentage + '%';
-    this.__range.style.width = (maxPercentage - minPercentage) + '%';
-
-    return this;
-};
-
-// Extend dat.GUI to add the new controller
-dat.GUI.prototype.addRange = function(object, property, min, max, step) {
-    return this.add(new dat.gui.RangeController(object, property, min, max, step));
-};
-
-        // Step 3: Create a GUI and use the custom range controller
-        const gui = new dat.GUI();
-        const obj = { value: 50 };
-
-        // Add the custom range slider
-        gui.addRange(obj, 'value', 0, 100, 2,1);
-
-        // Test object to update in real-time
-        obj.value = 50;
+                    const responseBlob = await hf.imageToImage({
+                        model: 'stabilityai/stable-diffusion-2',
+                        inputs: await (await fetch(this.uploadedImage)).blob(),
+                        parameters: {
+                            upscale: 4
+                        }
+                    });
+                    console.log(responseBlob)
+                    
+                   
+                }
+            }
+        });
     </script>
 </body>
 </html>

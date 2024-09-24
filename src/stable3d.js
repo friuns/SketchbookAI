@@ -16,8 +16,48 @@ async function GenerateImage(input) {
 
 }
 
-async function GenerateGLB(imageBlob) {
-    let hash = Math.random().toString(36).substring(2, 11) + Math.random().toString(36).substring(2, 11);
+async function GenerateGLB(origImgBlob) {
+
+    // Create an image element
+    const img = new Image();
+    img.src = URL.createObjectURL(origImgBlob);
+
+    // Wait for the image to load
+    await new Promise((resolve) => {
+        img.onload = resolve;
+    });
+
+    // Create a canvas and resize the image while keeping aspect ratio
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1024;
+    canvas.height = 1024;
+
+    // Calculate the aspect ratio and fit the image exactly to 1024x1024
+    const aspectRatio = img.width / img.height;
+    let drawWidth, drawHeight, offsetX, offsetY;
+
+    if (aspectRatio > 1) {
+        drawWidth = 1024;
+        drawHeight = 1024 / aspectRatio;
+        offsetX = 0;
+        offsetY = (1024 - drawHeight) / 2;
+    } else {
+        drawWidth = 1024 * aspectRatio;
+        drawHeight = 1024;
+        offsetX = (1024 - drawWidth) / 2;
+        offsetY = 0;
+    }
+
+    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+
+    // Convert the canvas to a blob in JPG format
+    const imageBlob = await new Promise((resolve) => {
+        canvas.toBlob(resolve, 'image/jpeg');
+    });
+
+    let hash = Math.random().toString(36).substring(2, 11) ;
 
     const formData = new FormData();
     formData.append('files', imageBlob, imageBlob.name);

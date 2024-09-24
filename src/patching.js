@@ -25,18 +25,19 @@ function PatchClone() {
     THREE.Object3D.prototype.clone = (function (originalClone) {
         return function () {
 
-
             let oldClone = this.clone;
             this.clone = originalClone;
             let clone = SkeletonUtils.clone(this);
             if (this.userData.isGLTF) {
                 let folder;
                 let originalSize = clone.scale.length();
+               
                 if (!gui.__folders[clone.name]) {
                     clone.size = 1;
                     folder = gui.addFolder(clone.name);
                     folder.add(clone, 'visible').name('Visible');
                     folder.add(clone, 'size', .1, 10).name('Size');
+                    folder.add(clone.position, 'y', -10, 10).name('Y Offset').step(0.01); // Add Y offset control
                 } else {
                     folder = gui.__folders[clone.name];
                 }
@@ -47,6 +48,10 @@ function PatchClone() {
                 let size = folder.__controllers.find(controller => controller.property === 'size');
                 size.onChange((value) => {
                     clone.scale.setScalar(originalSize * value);
+                });
+                let yOffset = folder.__controllers.find(controller => controller.property === 'y'); // Find Y offset controller
+                yOffset.onChange((value) => {
+                    clone.position.y =  value; // Apply Y offset
                 });
             }
 

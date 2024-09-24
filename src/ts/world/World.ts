@@ -199,9 +199,7 @@ export class World
 		animate();
 	}
 
-	// Update
-	// Handles all logic updates.
-	
+
 	public update(timeStep: number, unscaledTimeStep: number): void
 	{
 		this.updatePhysics(timeStep);

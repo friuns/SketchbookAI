@@ -31,7 +31,10 @@
                 const intersectionPoint = intersects[0].point;
 
                 if (image) {
-                    const hashCode = fileName.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0).toString(16).substring(0, 2);
+                    const arrayBuffer = await file.arrayBuffer();
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashCode = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 2);
                     const glbFileName = `${hashCode}_${fileName.replace(/\.[^/.]+$/, hashCode+".glb")}`;
                     let glbUrl;
                     try {

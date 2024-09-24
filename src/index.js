@@ -180,6 +180,7 @@ let chat = {
                 'src/main/examples/carExample.ts',
                 'src/ts/vehicles/MyCar.ts',
                 'src/main/examples/carBazooka.ts',
+                'src/main/examples/trees.ts',
             ];
             async function fetchAndProcessFiles(fileNames) {
                 const fetchPromises = fileNames.map(async path => {

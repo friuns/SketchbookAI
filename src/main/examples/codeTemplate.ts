@@ -3,12 +3,14 @@ export {};
 // IMPORTANT: Always use function AutoScaleInMeters(model: any, approximateSizeInMeters: number) to scale the model
 // IMPORTANT: Always expose adjustable parameters to world.gui
 // IMPORTANT: Assign animation names like this: animationsMapping.idle = Idle animation name from glb etc...
+// Remember to use getWorldPosition instead of position for THREE.Object3D
 
 //#region Player Class
 class Player extends Character {
     // put player code here
     update(timeStep: number): void {
         super.update(timeStep);
+        
     }
 
     inputReceiverUpdate(deltaTime: number): void {
@@ -33,7 +35,7 @@ async function main() {
         TWEEN.update();
     });
 
-    const player = new Player(playerModel);
+    const player = new Player(playerModel.scene);    
     world.gui.add(player, "moveSpeed").name("Player Speed").min(0).max(10).step(0.1);
     player.setPosition(0, 0, -5);
     world.add(player);

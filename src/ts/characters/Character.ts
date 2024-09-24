@@ -439,7 +439,9 @@ export class Character extends THREE.Object3D implements IWorldEntity
 			}
 		}
 	}
-
+    /**
+     * @param {number} timeStep - The time step in seconds.
+     */
 	public update(timeStep: number): void
 	{
 		this.behaviour?.update(timeStep);
@@ -555,6 +557,10 @@ export class Character extends THREE.Object3D implements IWorldEntity
 		if (this.importantAction?.isRunning()) return 0;
 
 		let clip = this.animations.find(a=>a.name ==  clipName) ?? THREE.AnimationClip.findByName(this.animations, this.animationsMapping[clipName]);
+		if(!clip && clipName == "walk")
+			this.animationsMapping.walk = this.animationsMapping.run;
+		if(!clip && clipName == "run")
+			this.animationsMapping.run = this.animationsMapping.walk;
 
 		let action = this.mixer.clipAction(clip);
 		if (important)

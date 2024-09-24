@@ -113,9 +113,15 @@
                         child.castShadow = true;
                         child.receiveShadow = true;
 
-                        // If the material doesn't have a map (diffuse texture), set a default color
+                        // Create and assign textured toon material
+                        const toonMaterial = new THREE.MeshToonMaterial({
+                            color: 0xcccccc, // Light gray color
+                            gradientMap: new THREE.TextureLoader().load('path/to/gradientMap.png')
+                        });
+
+                        // If the material doesn't have a map (diffuse texture), set the toon material
                         if (!child.material.map) {
-                            child.material.color.setHex(0xcccccc); // Light gray color
+                            child.material = toonMaterial;
                         }
                     }
                 });

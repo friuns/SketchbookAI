@@ -3,6 +3,7 @@
 let lastEvalCode = '';
 async function Eval(content) 
 {   
+    
     if(!content.trim())
     {
         console.error("empty code");
@@ -12,7 +13,7 @@ async function Eval(content)
     SetCode(content);
     content = replaceImports(content); 
 
-    let compiledCode = compileTypeScript(content+(settings.enableBreakpoints ? "\n;debugger;" : ";console.log('executed');"));
+    let compiledCode = compileTypeScript("var Math = new SeededRandom();"+content+(settings.enableBreakpoints ? "\n;debugger;" : ";console.log('executed');"));
 
 
     var code = compiledCode

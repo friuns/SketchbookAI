@@ -160,6 +160,9 @@ class BaseObject extends THREE.Object3D {
     oldQuaternion = new THREE.Quaternion();
     executeOneTime = true;
 
+    /**
+     * @param {number} timeStep - The time step in seconds.
+     */
     update(timeStep) {
         if (!this.body) return;
 

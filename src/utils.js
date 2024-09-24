@@ -115,6 +115,49 @@ function InitVue(obj, args = {}) {
 
     return { messageWithoutCodeBlocks, files };
 }
+class SeededRandom {
+    
+
+    constructor(seed = 1) {
+        
+        this._seed = seed;
+        this.originalSeed = seed;
+        this.m = 0x80000000; // 2^31
+        this.a = 1103515245;
+        this.c = 12345;
+        
+        const randomSeedControl = gui.add(this, 'seed', 1, 100).name("Random Seed").step(1);
+        randomSeedControl.onChange(function (value) {
+            this.seed = value;
+        });
+
+        // Automatically copy all properties and methods from Math
+        Object.getOwnPropertyNames(Math).forEach(prop => {
+            if (prop !== 'random') {
+                if (typeof Math[prop] === 'function') {
+                    this[prop] = Math[prop].bind(Math);
+                } else {
+                    this[prop] = Math[prop];
+                }
+            }
+        });
+    }
+    
+
+    get seed() {
+        return this.originalSeed;
+    }
+
+    set seed(newSeed) {
+        this.originalSeed = this._seed = newSeed;
+    }
+
+    random() {
+        this._seed = (this.a * this._seed + this.c) % this.m;
+        return this._seed / this.m;
+    }
+}
+
 var snapshot;
 function ResetState(){}
 function SaveState() {
