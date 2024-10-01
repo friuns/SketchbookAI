@@ -128,6 +128,7 @@ let chat = {
         this.variant.files = [new VariantFile('script.js', scriptContent)];
     },
     floatingCode: '',
+    //#region sendInput
     async sendInput() {
 
         this.params.lastText = this.inputText || this.params.lastText;
@@ -220,56 +221,62 @@ let chat = {
             const previousUserMessages = chat.messageLog.length && ("<Previous_user_messages>\n" + chat.messageLog
                 .map(msg => msg.user)
                 .join('\n') + "\n</Previous_user_messages>");
-            let code = this.variant.files[0].content;
+            
             this.variants[0] = this.variant;
             this.currentVariant = 0;
             this.variants.length = 1;
             let updateLock = Promise.resolve();
             let abort = false;
-
-            await Promise.all(settings.batchRequests.map(async (model,i) => {
+            this.floatingCode = '';
+            //#region SendMessage
+            let SendMessage = async (model,i) => {
                 i++;
-                
-                const response = await getChatGPTResponse({
-                    model, 
-                    apiKey: settings.apiKey || "sk-or-v1-"+getRandomKey(),
-                    apiUrl: "https://openrouter.ai/api",
-                    messages: [
-                        //    { role: "system", content: settings.rules  },
-                        //{ role: "assistant", content: `When user says: spawn or add object, then spawn it at near player position: ${playerLookPoint}` },
-                        { role: "system", content: "Note: examples are not included in source code\n" + await fetchAndProcessFilesCombined(examples) },
-                        {
-                            role: "system", content:
-                                await fetchAndProcessFilesCombined(srcFiles) +
-                                //  "\nNote: examples are not included in source code\n"+
-                                //  await fetchAndProcessFiles(examples) +
-                                Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n')
-                        },
-                        //...(await fetchAndProcessFiles(srcTsFiles)).map(a => ({ role: "system", content: `<file name="${a.name}">\n${a.content}\n</file>` })),                        
-                        { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite current code to accomplish user complain: ${this.params.lastText}` },
-                        //{ role: "user", content: `Improve last user complain create plan how you would implement it` },
-                        //{ role: "user", content: `Reflect write chain of though how you failed to implement code and what you need to implement it correctly` },
-
-                        //Understanding the Problem,Thinking through a Solution, breakdown of the challenges
-                    ],
-                    signal: abortController.signal
-                });
-                
+                let code = i == 1 ? this.variants[0].files[0].content : this.variant.files[0].content;
                 let botMessage = new BotMessage();
-                botMessage.model = model;
-                botMessage.processing = true;
-                this.variants[i] = botMessage;
-                try{
-                for await (const chunk of response) {
-                    if (!this.currentVariant)
-                        this.currentVariant = i;
-                    botMessage.content = chunk.message.content;
-                    if (this.currentVariant == i)
-                        this.floatingCode = botMessage.content;
-                    }
-                } catch (e) {
-                    if (e.name != 'AbortError')
+                    botMessage.model = model;
+                    botMessage.processing = true;
+                    this.variants[i] = botMessage;
+                for (let retry = 0; retry < 5; retry++)
+                {
+                    const response = await getChatGPTResponse({
+                        model,
+                        apiKey: settings.apiKey || "sk-or-v1-" + getRandomKey(),
+                        apiUrl: "https://openrouter.ai/api",
+                        messages: [
+                            //    { role: "system", content: settings.rules  },
+                            //{ role: "assistant", content: `When user says: spawn or add object, then spawn it at near player position: ${playerLookPoint}` },
+                            { role: "system", content: "Note: examples are not included in source code\n" + await fetchAndProcessFilesCombined(examples) },
+                            {
+                                role: "system", content:
+                                    await fetchAndProcessFilesCombined(srcFiles) +
+                                    //  "\nNote: examples are not included in source code\n"+
+                                    //  await fetchAndProcessFiles(examples) +
+                                    Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n')
+                            },
+                            //...(await fetchAndProcessFiles(srcTsFiles)).map(a => ({ role: "system", content: `<file name="${a.name}">\n${a.content}\n</file>` })),                        
+                            { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite current code to accomplish user complain: ${this.params.lastText}` },
+                            //{ role: "user", content: `Improve last user complain create plan how you would implement it` },
+                            //{ role: "user", content: `Reflect write chain of though how you failed to implement code and what you need to implement it correctly` },
+
+                            //Understanding the Problem,Thinking through a Solution, breakdown of the challenges
+                        ],
+                        signal: abortController.signal
+                    });
+
+                    try {
+                        for await (const chunk of response) {
+                            botMessage.content = chunk.message.content;
+                            if (this.currentVariant ==1)
+                                this.floatingCode = botMessage.content;
+                        }
+                        if(!botMessage.content) continue;
+                    } catch (e) {
+                        console.log(e);
+                        continue;
                         botMessage.lastError = e;
+                        return;
+                    }
+                    break;
                 }
                 botMessage.processing = false;
                 console.log(botMessage.content);
@@ -279,8 +286,18 @@ let chat = {
 
                     if (abort)
                         return;
+                    
                     let variant = this.variants[i];
-                    await this.switchVariant(i);
+                    //#region SwitchVariant
+                    try{
+                        await this.switchVariant(i);
+                    }
+                    catch(e)
+                    {
+                        console.error(e);
+                        
+                    }
+                    //#endregion
                     let startTime = Date.now();
                     while (!variant.lastError && Date.now() - startTime < 1500) {
                         await new Promise(requestAnimationFrame);
@@ -289,7 +306,11 @@ let chat = {
                         abort = true;
                 });
 
-            }));
+            };
+            //#endregion
+            //#region SendMessages
+            await Promise.all(settings.batchRequests.map((model,i) => SendMessage(model, i)));
+            //#endregion
 
             console.log(chat.floatingCode)
             if (this.messageLog[this.messageLog.length - 1]?.user != this.params.lastText) {

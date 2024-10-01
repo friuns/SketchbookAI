@@ -204,7 +204,7 @@ function SaveState() {
         world.vehicles.length = 0;
         world.vehicles.push(...snapshot.vehicles);
         world.timeScaleTarget = 1;
-        
+        glbFiles={};
         Object.keys(world.gui.__folders).reverse().forEach(key => {
             if (!snapshot.folders[key]) {
                 world.gui.removeFolder(world.gui.__folders[key]);

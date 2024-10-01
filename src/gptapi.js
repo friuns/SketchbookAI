@@ -1,4 +1,5 @@
-import('https://esm.sh/@huggingface/inference').then(a => { globalThis.HfInference = a.HfInference; });
+import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference);
+
 globalThis.apiUrl = (globalThis.isLocal && false ? "http://localhost:3000/" : "https://api.gptcall.net/");
 globalThis.getChatGPTResponse = async function* ({messages,functions,model=settings.model.selected,signal,apiUrl=settings.apiUrl,apiKey=settings.apiKey}) {
 
@@ -18,16 +19,67 @@ globalThis.getChatGPTResponse = async function* ({messages,functions,model=setti
      }
 
 
-    const HF_TOKEN = apiKey ||'kg' + generateHash(JSON.stringify(body));
-    const hf = new HfInference(HF_TOKEN);
-    const ep = hf.endpoint(apiUrl ||  globalThis.apiUrl); 
-    const stream = await ep.chatCompletionStream(body,{signal});
-    let combined = {};
-    for await (const chunk of stream) {
-        if (chunk.choices && chunk.choices.length > 0) {
-            combined.message = combineJSON(combined.message, chunk.choices[0].delta);
-            combined = { ...combined, ...chunk.choices[0] };
-            yield combined;
+    const key = apiKey ||'kg' + generateHash(JSON.stringify(body));
+    if (key.startsWith("hf_")) {
+        const hf = new HfInference(key);
+        const ep = hf.endpoint(apiUrl);
+        const stream = await ep.chatCompletionStream(body, { signal });
+        let combined = {};
+        for await (const chunk of stream) {
+            if (chunk.choices && chunk.choices.length > 0) {
+                combined.message = combineJSON(combined.message, chunk.choices[0].delta);
+                combined = { ...combined, ...chunk.choices[0] };
+                yield combined;
+            }
+        }
+    }
+    else {
+        const headers = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${key}`
+        };
+
+        const response = await fetch(apiUrl+"/v1/chat/completions", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body),
+            signal: signal
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let combined = { message: {} };
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value);
+            const parts = buffer.split("\n");
+            buffer = parts.pop();
+
+            for (const part of parts) {
+                if (part.startsWith("data: ")) {
+                    if (part.substring(6) === "[DONE]") {
+                        return combined;
+                    }
+                    let json = JSON.parse(part.substring(6));
+                    let responseObj = json.choices?.[0];
+                    if (json.error?.code) {
+                        throw new Error(json.error.message);
+                    }
+                    if (!responseObj) continue;
+                    combined.message = combineJSON(combined.message, responseObj.delta);
+                    combined = { ...combined, ...responseObj };
+                    yield combined;
+                }
+            }
         }
     }
 }

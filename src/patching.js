@@ -282,3 +282,10 @@ THREE.AnimationClip.findByName = (clipArray, name) => {
     return clip;
 };
 */
+
+const originalToString = Object.prototype.toString;
+Object.prototype.toString = function() {
+    let orig = originalToString.call(this);
+    return orig;
+  
+};

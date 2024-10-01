@@ -6,8 +6,7 @@ async function Eval(content)
     
     if(!content?.trim())
     {
-        console.error("empty code");
-        return;
+        throw "empty code";
     }
     chat.variant.lastError = '';
     SetCode(content);
@@ -29,7 +28,7 @@ async function Eval(content)
     //if (chat.currentVariant!=0)
       //  console.log(content);
     if(content.includes("world.update = "))
-        throw new Error("direct assign world.update = function(){} is not allowed, use addMethodListener");
+        throw "direct assign world.update = function(){} is not allowed, use addMethodListener";
     lastEvalCode = code;
     try
     {
