@@ -25,7 +25,7 @@ const cacheManager = new GoogleAICacheManager(key);
 
 // Create a cache with a 5 minute TTL.
 const displayName = 'sample text document';
-const model = 'models/gemini-1.5-flash-001';
+const model = 'models/gemini-2.0-flash';
 const systemInstruction =
   'You are an expert text analyzer, and your job is to answer ' +
   "the user's query based on the text content you have access to.";
@@ -35,7 +35,7 @@ const path = require('path');
 
 // Function to fetch only .ts and .js files from the src and build/types directories, including subfolders
 const fetchFilesFromBuildTypes = () => {
-  const directories = ['build/types', 'src/examples'].map(dir => path.join(__dirname, dir));
+  const directories = ['build/types', 'src/main/examples'].map(dir => path.join(__dirname, dir));
   
   const getFilesRecursively = (dir) => {
     return fs.readdirSync(dir).flatMap(file => {
