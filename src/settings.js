@@ -3,12 +3,12 @@ globalThis.isLocal = window.location.hostname === "localhost";
 
 
 let settings = {
-    apiUrl: "",
+    
     apiKey: "",
     enableBreakpoints:false,
     model: { selected: "gemini-1.5-flash-latest", options: ["gemini-1.5-pro-exp-0801", "gemini-1.5-pro-latest", "gemini-1.5-flash-latest", "gpt-4o-mini"] },
     localSrc: "C:/Users/friuns/Documents/Sketchbook/src/main/examples",
-    codeFile: globalThis.isLocal ? "./main/examples/module.ts" : "./codeTemplate.js",
+    codeFile:  "./main/examples/module.ts" ,
     batchRequests:[
         "google/gemini-flash-1.5-exp",
         "google/gemini-flash-1.5-exp",
@@ -16,7 +16,6 @@ let settings = {
         "google/gemini-pro-1.5-exp",
         "google/gemini-pro-1.5-exp",
         "nousresearch/hermes-3-llama-3.1-405b:free"
-
     ]
 /*
     rules: `You will help write javascript code for a 3D game. 

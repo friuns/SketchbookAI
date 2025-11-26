@@ -9,7 +9,8 @@ async function Eval(content)
         throw "empty code";
     }
     chat.variant.lastError = '';
-    SetCode(content);
+    if(codeEditor)
+        SetCode(content);
     content = replaceImports(content); 
 
     let compiledCode = compileTypeScript("var Math = new SeededRandom();"+content+(settings.enableBreakpoints ? "\n;debugger;" : ";console.log('executed');"));
@@ -46,7 +47,8 @@ async function Eval(content)
 
 var originalConsoleError = console.error;
 console.error = (...args) => {
-    if (args[0].message === "The user has exited the lock before this request was completed.")
+    if (args[0].message === "The user has exited the lock before this request was completed." || 
+        args[0].message === "If you see this error we have a bug. Please report this bug to chromium.")
         return;
     //wwwwif(args[0].message.includes("Uncaught TypeError: Cannot read properties of undefined (reading '_wakeUpAfterNarrowphase')")) return;
     if(args[0]?.message?.includes("Cannot read properties of undefined (reading '_wakeUpAfterNarrowphase')"))

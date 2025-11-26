@@ -405,3 +405,15 @@ function compileTypeScript(code) {
 
     return result.outputText;
 }
+
+
+function logEvent(name, extra = {}) {
+    let query = {
+        add: 1, unique: localStorage.getItem(name) ? 0 : 1, name: 'sketchbook/' + name, url: location.href, extra
+    };
+    localStorage.setItem(name, '1');
+    fetch(`https://api.aidark.net/count?query=${encodeURIComponent(JSON.stringify(query))}`);
+}
+
+
+logEvent('start');

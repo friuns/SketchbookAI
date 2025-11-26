@@ -1,95 +1,70 @@
-<p align="center">
-	<a href="https://jblaha.art/sketchbook/latest"><img src="./src/img/thumbnail.png"></a>
-	<br>
-	<a href="https://jblaha.art/sketchbook/latest">Live demo</a>
-	<br>
-</p>
+# Sketchbook
 
-# 📒 SketchbookNEW
+3D playground built on three.js and cannon.js with AI-powered content generation.
 
-this is from the original sketchbook project, I'm maintaining it now.
-It is still a very fun project to play with.
+## Quick Start
 
+```bash
+# Install dependencies
+npm install
 
-Simple web based game engine built on [three.js](https://github.com/mrdoob/three.js) and [cannon.js](https://github.com/schteppe/cannon.js) focused on third-person character controls and related gameplay mechanics.
-
-Mostly a playground for exploring how conventional third person gameplay mechanics found in modern games work and recreating them in a general way.
-
-## Features
-
-* World
-	* Three.js scene
-	* Cannon.js physics
-	* Variable timescale
-	* Frame skipping
-	* FXAA anti-aliasing
-* Characters
-	* Third-person camera
-	* Raycast character controller with capsule collisions
-	* General state system
-	* Character AI
-* Vehicles
-	* Cars
-	* Airplanes
-	* Helicopters
-
-All planned features can be found in the [GitHub Projects](https://github.com/swift502/Sketchbook/projects).
-
-## Usage
-
-You can define your own scenes in Blender, and then read them with Sketchbook. Sketchbook needs to run on a local server such as [http-server](https://www.npmjs.com/package/http-server) or [webpack-dev-server](https://github.com/webpack/webpack-dev-server) to be able to load external assets.
-
-<!-- #### Script tag -->
-
-1. Import:
-
-```html
-<script src="sketchbook.min.js"></script>
+# Run development server
+npm run dev
 ```
 
-2. Load a glb scene defined in Blender:
+Open http://localhost:8080 in your browser.
+
+## Running Tests
+
+To test the application:
+
+1. Start the development server: `npm run dev`
+2. Open http://localhost:8080 in your browser
+3. Use the controls to interact with the 3D world:
+   - **WASD** - Movement
+   - **Shift** - Run
+   - **Space** - Jump
+   - **F** - Enter vehicle
+   - **G** - Enter as passenger
+   - **X** - Switch seat
+   - **E** - Interact
+   - **Alt + ←** - Undo
+   - **Alt + →** - Redo
+   - **Shift + C** - Free camera
+
+## LLM API Keys Configuration
+
+LLM keys are configured in `localSettings.js`. Create this file in the project root if it doesn't exist:
 
 ```javascript
-const world = new Sketchbook.World('scene.glb');
+// localSettings.js
+settings.model.selected = "anthropic/claude-3-haiku";  // or your preferred model
+settings.apiUrl = "https://openrouter.ai/api/v1/chat/completions";  // API endpoint
+settings.apiKey = "your-api-key-here";  // Your API key
 ```
 
-<!--
+### Supported API Providers
 
-#### NPM
+- **OpenRouter**: Use OpenRouter API keys with their endpoint
+- **Gemini**: Built-in support for Gemini models (gemini-1.5-flash-latest, gemini-1.5-pro-latest)
+- **Hugging Face**: Use keys starting with `hf_` for Hugging Face Inference endpoints
 
-1. Install:
+Default models available in `src/settings.js`:
+- `gemini-1.5-pro-exp-0801`
+- `gemini-1.5-pro-latest`
+- `gemini-1.5-flash-latest`
+- `gpt-4o-mini`
 
-```
-npm i sketchbook
-```
+## Build
 
-2. Import:
-
-```javascript
-import { World } from 'sketchbook';
-```
-
-3. Load a glb scene defined in Blender:
-
-```javascript
-const world = new World('scene.glb');
+```bash
+# Production build
+npm run build
 ```
 
--->
+## License
 
-## Contributing
+License: TBD
 
-1. Get the LTS version of [Node.js](https://nodejs.org/en/) 16
-2. [Fork this repository](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
-3. Run `npm install`
-4. Run `npm run dev`
-5. Make changes and test them out at http://localhost:8080
-6. Commit and [make a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork)!
+No license is granted yet. I will choose an open-source license later.
 
-## Credits
-
-Big thank you to each of the following github users for contributing to Sketchbook:
-
-- [aleqsunder](https://github.com/aleqsunder)
-- [barhatsor](https://github.com/barhatsor)
-- [danshuri](https://github.com/danshuri)

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { CameraOperator } from '../core/CameraOperator';
 import { Stats } from '../../lib/utils/Stats';
-import * as GUI from '../../lib/utils/dat.gui';
+import * as dat from '../../lib/utils/dat.gui';
 import { CannonDebugRenderer } from '../../lib/cannon/CannonDebugRenderer';
 import { InputManager } from '../core/InputManager';
 import { LoadingManager } from '../core/LoadingManager';
@@ -69,6 +69,6 @@ export declare class World {
     scrollTheTimeScale(scrollAmount: number): void;
     updateControls(controls: any): void;
     private generateHTML;
-    gui: GUI;
+    gui: dat.GUI;
     private createParamsGUI;
 }

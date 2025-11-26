@@ -100,7 +100,7 @@ export class InputManager extends InputManagerBase implements IUpdatable
 
 	private initTouchArea(): void {
 		this.touchArea = document.createElement('div');
-		this.touchArea.style.cssText = "position: absolute; top: 0; right: 0; width: 50%; height: 100%;";
+		this.touchArea.style.cssText = "position: absolute; top: 50%; right: 0; width: 50%; height: 50%;";
 		document.body.appendChild(this.touchArea);
 
 		this.touchArea.addEventListener('touchstart', (evt) => this.handleTouchStart(evt));

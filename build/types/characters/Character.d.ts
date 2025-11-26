@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { KeyBinding } from '../core/KeyBinding';
 import { VectorSpringSimulator } from '../physics/spring_simulation/VectorSpringSimulator';
 import { RelativeSpringSimulator } from '../physics/spring_simulation/RelativeSpringSimulator';
@@ -104,7 +103,7 @@ export declare class Character extends THREE.Object3D implements IWorldEntity {
     private physicsEnabled;
     private preStep;
     private postStep;
-    constructor(gltf: GLTF);
+    constructor(object3D: THREE.Object3D);
     setAnimations(animations: AnimationClip[]): void;
     setArcadeVelocityInfluence(x: number, y?: number, z?: number): void;
     setViewVector(vector: THREE.Vector3): void;
@@ -128,6 +127,9 @@ export declare class Character extends THREE.Object3D implements IWorldEntity {
     triggerAction(actionName: string, value: boolean): void;
     takeControl(): void;
     resetControls(): void;
+    /**
+     * @param {number} timeStep - The time step in seconds.
+     */
     update(timeStep: number): void;
     inputReceiverInit(): void;
     displayControls(): void;

@@ -40,7 +40,7 @@ export class Sky extends THREE.Object3D implements IUpdatable
 		super();
 
 		this.world = world;
-		
+
 		// Sky material
 		this.skyMaterial = new THREE.ShaderMaterial({
 			uniforms: THREE.UniformsUtils.clone(SkyShader.uniforms),
@@ -76,7 +76,7 @@ export class Sky extends THREE.Object3D implements IUpdatable
 
 		this.csm = new CSM({
 			fov: 80,
-			far: 300,	// maxFar
+			maxFar: 300,	// maxFar
 			lightIntensity: 0.8,
 			cascades: 3,
 			shadowMapSize: 4096,
@@ -88,7 +88,7 @@ export class Sky extends THREE.Object3D implements IUpdatable
 		this.csm.fade = false;
 
 		this.refreshSunPosition();
-		
+
 		world.graphicsWorld.add(this);
 		world.registerUpdatable(this);
 	}

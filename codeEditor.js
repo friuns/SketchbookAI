@@ -32,7 +32,7 @@ new Vue({
                      //!className.includes("tween.d.ts") && 
                      !className.includes("sweetalert2.d.ts")) return;
                     const text = await fetch(className).then(response => response.text()).catch(e => {
-                        console.error("update paths.txt", className, e);
+                        originalConsoleError("update paths.txt", className, e);                        
                         return "";
                     });
                     
@@ -54,7 +54,7 @@ new Vue({
                 codeEditor = monaco.editor.create(document.getElementById('editorElement'), {
                     language: 'typescript',
                     theme: 'vs-dark',
-                    readOnly: globalThis.isMobile, // Make editor readonly if on mobile
+                    //readOnly: globalThis.isMobile, // Make editor readonly if on mobile
                     // Add the following line to disable the F12 key override
                    // contextmenu: false,
                 });

@@ -1,4 +1,5 @@
-globalThis.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+globalThis.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.userAgent.includes('Android');
+console.log("chatMore.js loaded");
 
 class VariantFile {
     constructor(name, content) {
@@ -28,7 +29,18 @@ let chat = {
     window: window,
     globalThis: globalThis,
     document: document,
-    suggestions: ['Add a red cube', 'Create a bouncing ball', 'make pistol shoot, bullets, kill zombie when hit'],
+    suggestions: [
+        ['Add a red cube'],
+        ['Add a pistol', 'Add aiming mechanics for better shooting'],
+        ['spawn zombies randomly', 'Make zombies that can chase and attack the player', 'Make the zombies take damage and die'],
+        ['add football','add goal','add npc that tries to get ball into goal'],
+        ['add mickey mouse','make so i can talk to using dialog boxes'],
+        ['place trees','place grass','add cows','make cows eat grass'],
+        ['add lambourgini', 'setup car doors and wheels'],
+        ['add second player','make the second player use different keys', 'make the second player shoot'],
+        ['create car with rocket launcher on top', 'create the bullets that the launcher shoots', 'make the bullets explode on impact'],
+        ['I want the player to shoot bullets from the rocket launcher.','bullets should explode when they hit something','change the explosion to be more visually impressive.'], 
+        ['create cubes with left mouse button', 'remove cubes with right mouse button','add physics to cubes'], 'make pistol shoot, bullets, kill zombie when hit'],
     get isLoading(){ 
         return this.abortController && !this.abortController.signal.aborted
      },
@@ -63,7 +75,7 @@ let chat = {
 
 
         if (!this.variant.content)
-            this.Clear();
+            await this.Clear();
 
 
         setTimeout(() => {
@@ -130,14 +142,25 @@ let chat = {
     floatingCode: '',
     //#region sendInput
     async sendInput() {
+        let index = this.suggestions.findIndex(s => Array.isArray(s) && s.includes(this.inputText));
+        if(index != -1)
+        {
+            this.suggestions[index].shift();
+            this.suggestions.push(this.suggestions[index]);
+            this.suggestions.splice(index, 1);
+        }
+        
 
         this.params.lastText = this.inputText || this.params.lastText;
         if (!this.inputText) {
+            document.activeElement?.blur?.();
             this.inputText = this.params.lastText;
             return;
         }
         Say(this.params.lastText)
-        this.inputText = '';
+        requestAnimationFrame(() => {
+            this.inputText = '';
+        });
         this.abortController?.abort();
         let abortController = this.abortController = new AbortController();
         
@@ -182,6 +205,7 @@ let chat = {
                 'src/main/examples/pistol.ts',
                 'src/main/examples/carExample.ts',
                 'src/ts/vehicles/MyCar.ts',
+                'src/main/examples/2player.ts',
                 'src/main/examples/carBazooka.ts',
                 'src/main/examples/trees.ts',
             ];
@@ -238,10 +262,12 @@ let chat = {
                     this.variants[i] = botMessage;
                 for (let retry = 0; retry < 5; retry++)
                 {
+                    let useBackup = retry > 5 / (isLocal?2:2) && model.includes("gemini");
+
                     const response = await getChatGPTResponse({
                         model,
-                        apiKey: settings.apiKey || "sk-or-v1-" + getRandomKey(),
-                        apiUrl: "https://openrouter.ai/api",
+                        apiKey: useBackup ? "kg" : settings.apiKey || "sk-or-v1-" + getRandomKey(),
+                        apiUrl: useBackup ? (siteUrl + "v1/chat/completions") : "https://openrouter.ai/api",
                         messages: [
                             //    { role: "system", content: settings.rules  },
                             //{ role: "assistant", content: `When user says: spawn or add object, then spawn it at near player position: ${playerLookPoint}` },

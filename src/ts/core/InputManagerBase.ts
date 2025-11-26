@@ -122,7 +122,7 @@ export class InputManagerBase implements IUpdatable
 
 	public onMouseMove(event: MouseEvent): void
 	{
-		if (this.isLocked) {
+		if (this.isLocked||globalThis.isMobile) {
 			this.inputReceivers.forEach(receiver => {
 				receiver.handleMouseMove(event, event.movementX, event.movementY);
 			});

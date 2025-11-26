@@ -1,7 +1,7 @@
 import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference);
 
-globalThis.apiUrl = (globalThis.isLocal && false ? "http://localhost:3000/" : "https://api.gptcall.net/");
-globalThis.getChatGPTResponse = async function* ({messages,functions,model=settings.model.selected,signal,apiUrl=settings.apiUrl,apiKey=settings.apiKey}) {
+globalThis.siteUrl = (globalThis.isLocal && false ? "http://localhost:3000/" : "https://api.gptcall.net/");
+globalThis.getChatGPTResponse = async function* ({messages,functions,model=settings.model.selected,signal,apiUrl=siteUrl,apiKey=settings.apiKey}) {
 
     messages = messages.map(message => ({
         role: message.role,
@@ -19,9 +19,10 @@ globalThis.getChatGPTResponse = async function* ({messages,functions,model=setti
      }
 
 
-    const key = apiKey ||'kg' + generateHash(JSON.stringify(body));
-    if (key.startsWith("hf_")) {
-        const hf = new HfInference(key);
+    if (apiKey == "kg") apiKey = "kg" + generateHash(JSON.stringify(body));
+
+    if (apiKey.startsWith("hf_")) {
+        const hf = new HfInference(apiKey);
         const ep = hf.endpoint(apiUrl);
         const stream = await ep.chatCompletionStream(body, { signal });
         let combined = {};
@@ -36,7 +37,7 @@ globalThis.getChatGPTResponse = async function* ({messages,functions,model=setti
     else {
         const headers = {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${key}`
+            "Authorization": `Bearer ${apiKey}`
         };
 
         const response = await fetch(apiUrl+"/v1/chat/completions", {

@@ -9,6 +9,8 @@ export declare class InputManager extends InputManagerBase implements IUpdatable
     private touchArea;
     private initialTouchPosition;
     private fButton;
+    private gamepadIndex;
+    private gamepadThreshold;
     constructor(world: World, domElement: HTMLElement);
     private initJoystick;
     private handleJoystickInput;
@@ -21,4 +23,10 @@ export declare class InputManager extends InputManagerBase implements IUpdatable
     private initFButton;
     private handleFButtonPress;
     private handleFButtonRelease;
+    private initGamepadListener;
+    update(timestep: number, unscaledTimeStep: number): void;
+    private handleGamepadInput;
+    private simulateWASDKeys2;
+    private simulateMouseMovement;
+    private handleGamepadButtons;
 }
