@@ -6,7 +6,7 @@ async function GenerateGLBFromPrompt(prompt) {
 async function GenerateImage(input) {
     let HfInference = (await import('https://esm.sh/@huggingface/inference')).HfInference;
     const prompt = input + ',Full-shot ,Full-length ,entire 3d model, object only, realism, Uncropped, stand alone, white background';
-    const hf = new HfInference('YOUR_HUGGINGFACE_TOKEN_HERE');
+    const hf = new HfInference(process.env.HUGGINGFACE_TOKEN || 'YOUR_HUGGINGFACE_TOKEN_HERE');
 
     const generatedImageBlob = await hf.textToImage({
         model: 'black-forest-labs/FLUX.1-schnell',

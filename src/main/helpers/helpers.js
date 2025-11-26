@@ -272,7 +272,7 @@ import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => global
 
 async function GenerateResponse(prompt) {
 
-    const hf = new HfInference('YOUR_HUGGINGFACE_TOKEN_HERE');
+    const hf = new HfInference(process.env.HUGGINGFACE_TOKEN || 'YOUR_HUGGINGFACE_TOKEN_HERE');
     const messages = [
         { role: 'user', content: prompt }
     ];
