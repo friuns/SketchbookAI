@@ -199,7 +199,7 @@ The core innovation of Sketchbook.
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/swift502/Sketchbook.git
+    git clone https://github.com/friuns2/Sketchbook.git
     cd Sketchbook
     ```
 
