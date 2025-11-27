@@ -89,6 +89,10 @@ let chat = {
                 settings.enableBreakpoints = value;
             });
 
+            world.gui.add({ showAPIRequestXML: settings.showAPIRequestXML }, 'showAPIRequestXML').name('Show API Request XML').onChange((value) => {
+                settings.showAPIRequestXML = value;
+            });
+
 
             //world.timeScaleTarget=0
             Eval(this.variant.files[0].content);

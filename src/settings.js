@@ -7,6 +7,7 @@ let settings = {
     apiKey: "sk-XyMEqVpNCa0YtYDE3u9MLlNvO5R28tbHaM2J629rzDE5LZnjhweCR4M20dbMKbcX",
     apiUrl: "https://opencode-cors-proxy.brutal.workers.dev",
     enableBreakpoints:false,
+    showAPIRequestXML:false,
     localSrc: "C:/Users/friuns/Documents/Sketchbook/src/main/examples",
     codeFile:  "./main/examples/module.ts" ,
     batchRequests:[

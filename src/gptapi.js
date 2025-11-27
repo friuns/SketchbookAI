@@ -18,6 +18,10 @@ globalThis.getChatGPTResponse = async function* ({messages,functions,model="grok
         max_tokens:200000/2
      }
 
+    // Show API request as XML if toggle is enabled
+    if (settings.showAPIRequestXML) {
+        openAPIRequestAsXML(body);
+    }
 
     if (apiKey == "kg") apiKey = "kg" + generateHash(JSON.stringify(body));
 
@@ -116,4 +120,62 @@ function generateHash(str) {
         hash = (hash << 5) - hash + str.charCodeAt(i);
     }
     return Math.abs(hash); // Ensure the hash is positive
+}
+
+function openAPIRequestAsXML(body) {
+    // Convert JSON body to XML format
+    const xml = jsonToXML(body);
+    
+    // Create a blob with XML content
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    
+    // Open in new tab
+    window.open(url, '_blank');
+    
+    // Clean up the URL after a delay
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function jsonToXML(obj, rootName = 'api_request') {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    
+    function convertValue(value, key, indent = '') {
+        if (value === null || value === undefined) {
+            return `${indent}<${key} />\n`;
+        }
+        
+        if (Array.isArray(value)) {
+            let result = `${indent}<${key}>\n`;
+            value.forEach((item, index) => {
+                result += convertValue(item, 'item', indent + '  ');
+            });
+            result += `${indent}</${key}>\n`;
+            return result;
+        }
+        
+        if (typeof value === 'object') {
+            let result = `${indent}<${key}>\n`;
+            for (let prop in value) {
+                if (value.hasOwnProperty(prop)) {
+                    result += convertValue(value[prop], prop, indent + '  ');
+                }
+            }
+            result += `${indent}</${key}>\n`;
+            return result;
+        }
+        
+        // Escape special XML characters
+        const escaped = String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
+        
+        return `${indent}<${key}>${escaped}</${key}>\n`;
+    }
+    
+    xml += convertValue(obj, rootName, '');
+    return xml;
 }
