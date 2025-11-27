@@ -1,0 +1,8 @@
+
+> sketchbook@0.4.0 dev
+> webpack-dev-server --config webpack.dev.js
+
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: http://localhost:8080/
+<i> [webpack-dev-server] On Your Network (IPv4): http://192.168.0.2:8080/
+<i> [webpack-dev-server] Content not from webpack is served from '/app' directory

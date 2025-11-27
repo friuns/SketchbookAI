@@ -22,6 +22,67 @@ class BotMessage {
 
 }
 
+const srcFiles = [
+    'build/types/world/World.d.ts',
+    'build/types/characters/Character.d.ts',
+    'build/types/interfaces/ICharacterAI.d.ts',
+    'build/types/interfaces/ICollider.d.ts',
+    'build/types/interfaces/IInputReceiver.d.ts',
+    'build/types/core/CameraOperator.d.ts',
+    'build/types/vehicles/Car.d.ts',
+    'build/types/core/KeyBinding.d.ts',
+    //'src/ts/enums/CharacterAnimations.ts',
+    'src/ts/characters/character_ai/FollowTarget.ts',
+    'src/ts/characters/character_ai/RandomBehaviour.ts',
+];
+
+const examples = [
+    //   'node_modules/three/src/core/Object3D.d.ts',
+    //'src/ts/core/InputManager.ts',
+
+    //'src/examples/rocketLauncher.md',
+    //...(await fetchFilesFromDir('src/examples','js')),
+    //  ...(await fetchFilesFromDir('src/examples', 'md'))
+    'src/main/helpers/helpers.js',
+    'src/main/examples/rocketLauncher.ts',
+    'src/main/examples/minecraft.ts',
+    'src/main/examples/dialog.ts',
+    'src/main/examples/pistol.ts',
+    'src/main/examples/carExample.ts',
+    'src/ts/vehicles/MyCar.ts',
+    'src/main/examples/2player.ts',
+    'src/main/examples/carBazooka.ts',
+    'src/main/examples/trees.ts',
+];
+
+async function fetchAndProcessFiles(fileNames) {
+    const fetchPromises = fileNames.map(async path => {
+        try {
+            const response = await fetch(path);
+            let content = await response.text();
+
+
+            if (path.includes("example") && !path.includes("helpers.js") && (path.endsWith(".js") || path.endsWith(".ts"))) {
+                content = content.split('\n').map(line => `// ${line}`).join('\n');
+            }
+
+            content = content.replace(/^.*\bprivate\b.*$/gm, '');
+            return { name: path, content: content };
+        } catch (e) {
+            alert("Error fetching file: " + e + " " + path);
+            return { name: path, content: '' };
+        }
+    });
+
+    const files = await Promise.all(fetchPromises);
+    return files;
+}
+
+async function fetchAndProcessFilesCombined(fileNames) {
+    let files = await fetchAndProcessFiles(fileNames);
+    return files.map(file => `<file name="${file.name}">\n${file.content}\n</file>`).join('\n\n');
+}
+
 let chat = {
 
     abortController:null,
@@ -39,9 +100,9 @@ let chat = {
         ['add lambourgini', 'setup car doors and wheels'],
         ['add second player','make the second player use different keys', 'make the second player shoot'],
         ['create car with rocket launcher on top', 'create the bullets that the launcher shoots', 'make the bullets explode on impact'],
-        ['I want the player to shoot bullets from the rocket launcher.','bullets should explode when they hit something','change the explosion to be more visually impressive.'], 
+        ['I want the player to shoot bullets from the rocket launcher.','bullets should explode when they hit something','change the explosion to be more visually impressive.'],
         ['create cubes with left mouse button', 'remove cubes with right mouse button','add physics to cubes'], 'make pistol shoot, bullets, kill zombie when hit'],
-    get isLoading(){ 
+    get isLoading(){
         return this.abortController && !this.abortController.signal.aborted
      },
     params: {
@@ -88,6 +149,7 @@ let chat = {
             world.gui.add({ enableBreakpoints: settings.enableBreakpoints }, 'enableBreakpoints').name('Enable Breakpoints').onChange((value) => {
                 settings.enableBreakpoints = value;
             });
+            world.gui.add(chat, 'previewMessages').name('Preview Messages');
 
 
             //world.timeScaleTarget=0
@@ -149,7 +211,7 @@ let chat = {
             this.suggestions.push(this.suggestions[index]);
             this.suggestions.splice(index, 1);
         }
-        
+
 
         this.params.lastText = this.inputText || this.params.lastText;
         if (!this.inputText) {
@@ -163,7 +225,7 @@ let chat = {
         });
         this.abortController?.abort();
         let abortController = this.abortController = new AbortController();
-        
+
         if (this.variant == this.variants[0])
             this.messageLog.pop();
 
@@ -177,75 +239,11 @@ let chat = {
 
 
         try {
-            const srcFiles = [
-                'build/types/world/World.d.ts',
-                'build/types/characters/Character.d.ts',
-                'build/types/interfaces/ICharacterAI.d.ts',
-                'build/types/interfaces/ICollider.d.ts',
-                'build/types/interfaces/IInputReceiver.d.ts',
-                'build/types/core/CameraOperator.d.ts',
-                'build/types/vehicles/Car.d.ts',
-                'build/types/core/KeyBinding.d.ts',
-                //'src/ts/enums/CharacterAnimations.ts',                
-                'src/ts/characters/character_ai/FollowTarget.ts',
-                'src/ts/characters/character_ai/RandomBehaviour.ts',
-            ]
-
-            const examples = [
-                //   'node_modules/three/src/core/Object3D.d.ts',
-                //'src/ts/core/InputManager.ts',
-
-                //'src/examples/rocketLauncher.md',
-                //...(await fetchFilesFromDir('src/examples','js')),                
-                //  ...(await fetchFilesFromDir('src/examples', 'md'))
-                'src/main/helpers/helpers.js',
-                'src/main/examples/rocketLauncher.ts',
-                'src/main/examples/minecraft.ts',
-                'src/main/examples/dialog.ts',
-                'src/main/examples/pistol.ts',
-                'src/main/examples/carExample.ts',
-                'src/ts/vehicles/MyCar.ts',
-                'src/main/examples/2player.ts',
-                'src/main/examples/carBazooka.ts',
-                'src/main/examples/trees.ts',
-            ];
-            async function fetchAndProcessFiles(fileNames) {
-                const fetchPromises = fileNames.map(async path => {
-                    try {
-                        const response = await fetch(path);
-                        let content = await response.text();
-
-
-                        if (path.includes("example") && !path.includes("helpers.js") && (path.endsWith(".js") || path.endsWith(".ts"))) {
-                            content = content.split('\n').map(line => `// ${line}`).join('\n');
-                        }
-
-                        content = content.replace(/^.*\bprivate\b.*$/gm, '');
-                        return { name: path, content: content };
-                    } catch (e) {
-                        alert("Error fetching file: " + e + " " + path);
-                        return { name: path, content: '' };
-                    }
-                });
-
-                const files = await Promise.all(fetchPromises);
-                return files;
-            }
-
-            async function fetchAndProcessFilesCombined(fileNames) {
-                let files = await fetchAndProcessFiles(fileNames);
-                return files.map(file => `<file name="${file.name}">\n${file.content}\n</file>`).join('\n\n');
-            }
-
-
-
-
-
             // Create a string with previous user messages
             const previousUserMessages = chat.messageLog.length && ("<Previous_user_messages>\n" + chat.messageLog
                 .map(msg => msg.user)
                 .join('\n') + "\n</Previous_user_messages>");
-            
+
             this.variants[0] = this.variant;
             this.currentVariant = 0;
             this.variants.length = 1;
@@ -277,7 +275,7 @@ let chat = {
                                     //  await fetchAndProcessFiles(examples) +
                                     Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n')
                             },
-                            //...(await fetchAndProcessFiles(srcTsFiles)).map(a => ({ role: "system", content: `<file name="${a.name}">\n${a.content}\n</file>` })),                        
+                            //...(await fetchAndProcessFiles(srcTsFiles)).map(a => ({ role: "system", content: `<file name="${a.name}">\n${a.content}\n</file>` })),
                             { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite current code to accomplish user complain: ${this.params.lastText}` },
                             //{ role: "user", content: `Improve last user complain create plan how you would implement it` },
                             //{ role: "user", content: `Reflect write chain of though how you failed to implement code and what you need to implement it correctly` },
@@ -310,7 +308,7 @@ let chat = {
 
                     if (abort)
                         return;
-                    
+
                     let variant = this.variants[i];
                     //#region SwitchVariant
                     try{
@@ -319,7 +317,7 @@ let chat = {
                     catch(e)
                     {
                         console.error(e);
-                        
+
                     }
                     //#endregion
                     let startTime = Date.now();
@@ -365,6 +363,35 @@ let chat = {
         await new Promise(resolve => setTimeout(resolve, 100));
         await Eval(code);
         console.log(content);
+    },
+
+    async previewMessages() {
+        // Create a string with previous user messages
+        const previousUserMessages = chat.messageLog.length && ("<Previous_user_messages>\n" + chat.messageLog
+            .map(msg => msg.user)
+            .join('\n') + "\n</Previous_user_messages>");
+
+        const code = this.variant.files[0].content;
+
+        const messages = [
+            { role: "system", content: "Note: examples are not included in source code\n" + await fetchAndProcessFilesCombined(examples) },
+            {
+                role: "system", content:
+                    await fetchAndProcessFilesCombined(srcFiles) +
+                    Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n')
+            },
+            { role: "user", content: `${previousUserMessages || ''}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite current code to accomplish user complain: ${this.inputText || this.params.lastText}` },
+        ];
+
+        const json = JSON.stringify(messages, null, 2);
+        const win = window.open("", "Messages Preview", "width=800,height=600");
+        if (win) {
+            win.document.write('<html><head><title>Messages Preview</title></head><body><pre>' + json.replace(/</g, '&lt;') + '</pre></body></html>');
+            win.document.close();
+        } else {
+            console.log("Preview Messages:", messages);
+            alert("Popup blocked. Messages logged to console.");
+        }
     },
 
     // Add these new methods
