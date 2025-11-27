@@ -81,10 +81,6 @@ https://github.com/user-attachments/assets/624d1793-f9e5-4734-ad86-9dfec28250da
 
 ---
 
-**🎮 Live Demo**: [Play Online](https://friuns2.github.io/SketchbookAI/)
-
-**📱 Download APK**: [Latest Release](https://github.com/friuns2/SketchbookAI/releases/latest)
-
 ## Comparison vs Other Platforms
 
 Sketchbook occupies a unique niche in the "Generative Game Engine" landscape by focusing on **code generation** over asset assembly, offering lower-level control and transparency than its SaaS competitors.
