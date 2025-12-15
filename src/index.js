@@ -271,22 +271,53 @@ let chat = {
                         apiKey: settings.apiKey,
                         apiUrl: settings.apiUrl,
                         messages: [
-                            //    { role: "system", content: settings.rules  },
-                            //{ role: "assistant", content: `When user says: spawn or add object, then spawn it at near player position: ${playerLookPoint}` },
-                            { role: "system", content: "Note: examples are not included in source code\n" + await fetchAndProcessFilesCombined(examples) },
+                            // Main system prompt with role definition and guidelines
+                            { role: "system", content: settings.systemPrompt },
+                            
+                            // Codebase context: Type definitions and core classes
                             {
-                                role: "system", content:
-                                    await fetchAndProcessFilesCombined(srcFiles) +
-                                    //  "\nNote: examples are not included in source code\n"+
-                                    //  await fetchAndProcessFiles(examples) +
-                                    Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n')
-                            },
-                            //...(await fetchAndProcessFiles(srcTsFiles)).map(a => ({ role: "system", content: `<file name="${a.name}">\n${a.content}\n</file>` })),                        
-                            { role: "user", content: `${previousUserMessages}\n\nCurrent code:\n\`\`\`typescript\n${code}\n\`\`\`\n\n${settings.importantRules}Rewrite current code to accomplish user complain: ${this.params.lastText}` },
-                            //{ role: "user", content: `Improve last user complain create plan how you would implement it` },
-                            //{ role: "user", content: `Reflect write chain of though how you failed to implement code and what you need to implement it correctly` },
+                                role: "system", 
+                                content: `# Codebase Reference - Type Definitions & Core Classes
 
-                            //Understanding the Problem,Thinking through a Solution, breakdown of the challenges
+The following files provide type definitions and core functionality available in your environment:
+
+${await fetchAndProcessFilesCombined(srcFiles)}
+
+${Object.entries(glbFiles).map(([name, file]) => `<file name="${name}">\n${file.content}\n</file>`).join('\n\n')}`
+                            },
+                            
+                            // Example implementations for reference
+                            { 
+                                role: "system", 
+                                content: `# Implementation Examples
+
+NOTE: These examples are for reference only and are NOT included in the current source code.
+Use them as patterns and inspiration for implementing features.
+
+${await fetchAndProcessFilesCombined(examples)}`
+                            },
+                            
+                            // User context and current state
+                            { 
+                                role: "user", 
+                                content: `# Task Context
+
+${previousUserMessages ? `## Previous User Requests\n${previousUserMessages}\n\n` : ''}## Current Code State
+
+\`\`\`typescript
+${code}
+\`\`\`
+
+## Current Request
+
+${this.params.lastText}
+
+## Instructions
+
+${settings.importantRules}
+
+Analyze the current code and the user's request. Rewrite the ENTIRE code to accomplish the user's request while maintaining existing functionality that isn't being changed.` 
+                            },
                         ],
                         signal: abortController.signal
                     });
