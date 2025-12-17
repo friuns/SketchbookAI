@@ -589,7 +589,7 @@ export class World
 		const templatesFolder = folder.addFolder('Templates');
 		// templatesFolder.open();
 
-		fetch('/api/examples')
+		fetch('/build/examples.json')
 			.then(response => response.json())
 			.then(files => {
 				files.forEach(file => {
