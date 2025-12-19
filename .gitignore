@@ -1,8 +1,7 @@
 .vscode
 node_modules
 /localSettings.js
-/build/sketchbook.min.js
-/build/types
+/build
 steam.txt
 dist
 blend
@@ -12,3 +11,4 @@ blend
 /src/main/examples/diffs/
 sketchbook.min.js
 npm_output.log
+/src/ts/world/templates.ts
