@@ -3,14 +3,15 @@
 <head>
     <title>Sketchbook</title>
     <meta name="viewport" content="width=800, user-scalable=no">
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Solway:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet">    
-    <script src="https://cdn.tailwindcss.com" onload="tailwind.config = { corePlugins: {preflight: false,}}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>    
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Local fallbacks for CDN resources -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.min.css" rel="stylesheet" type="text/css" onerror="this.onerror=null;this.href='data:text/css,'" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" onerror="this.onerror=null;this.href='data:text/css,'">
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet" onerror="this.onerror=null;this.href='data:text/css,'">
+    <link href="https://fonts.googleapis.com/css2?family=Solway:wght@400;500;700&display=swap" rel="stylesheet" onerror="this.onerror=null;this.href='data:text/css,'">
+    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet" onerror="this.onerror=null;this.href='data:text/css,'">    
+    <script src="https://cdn.tailwindcss.com" onerror="console.warn('Tailwind CDN unavailable')" onload="tailwind.config = { corePlugins: {preflight: false,}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js" onerror="console.warn('Tween.js CDN unavailable')"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='libs/vue.js';document.head.appendChild(s);"></script>
     
 </head>
 <style>
@@ -262,8 +263,8 @@ input::-ms-reveal {
             <div id="editorElement" style="position: fixed; top: 40px; left: 0; width: 100%; height: calc(100% - 40px);"></div>
         </div>
     </div>
-    <script src="https://unpkg.com/typescript@latest/lib/typescript.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/typescript@latest/lib/typescript.js" onerror="console.warn('TypeScript CDN unavailable')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js" onerror="console.warn('PeerJS CDN unavailable')"></script>
 
     <script src="build/sketchbook.min.js"></script>
     <script src="src/main/helpers/helpers.js"></script>
@@ -278,7 +279,18 @@ input::-ms-reveal {
     <script src="src/index.js"></script>
     <script src="localSettings.js"></script>
     <script src="src/tts.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <!-- Load Monaco loader fallback first -->
+    <script>
+        // Load Monaco loader fallback if CDN fails
+        var monacoScript = document.createElement('script');
+        monacoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js';
+        monacoScript.onerror = function() {
+            var fallback = document.createElement('script');
+            fallback.src = 'libs/monaco-loader.js';
+            document.head.appendChild(fallback);
+        };
+        document.head.appendChild(monacoScript);
+    </script>
     <script src="codeEditor.js"></script>
 
 

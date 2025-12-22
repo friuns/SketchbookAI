@@ -1,21 +1,51 @@
-require.config({
-    paths: {
-        vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.51.0/min/vs',
+// Try CDN first, fallback to local if CDN is blocked
+(function() {
+    // Wait for require to be defined
+    function initMonaco() {
+        if (typeof require !== 'undefined' && require.config) {
+            require.config({
+                paths: {
+                    vs: window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') 
+                        ? 'libs/monaco-editor/min/vs'
+                        : 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.51.0/min/vs',
+                }
+            });
+            return true;
+        }
+        return false;
     }
-});
+    
+    // Try immediately
+    if (!initMonaco()) {
+        // Wait a bit for loader to load
+        setTimeout(function() {
+            if (!initMonaco()) {
+                console.warn('Monaco loader not available - code editor may not work');
+            }
+        }, 100);
+    }
+})();
 
 var codeEditor;
 
-window.editorApp = new Vue({
-    el: '#editorApp',
-    data: {
-        showEditor: true,
-    },
-    mounted() {
-        this.initializeEditor();
-        // Add event listener for window resize
-        window.addEventListener('resize', this.resizeEditor);
-    },
+// Wait for Vue to be available
+(function initEditor() {
+    if (typeof Vue === 'undefined') {
+        console.log('Waiting for Vue to load...');
+        setTimeout(initEditor, 100);
+        return;
+    }
+    
+    window.editorApp = new Vue({
+        el: '#editorApp',
+        data: {
+            showEditor: true,
+        },
+        mounted() {
+            this.initializeEditor();
+            // Add event listener for window resize
+            window.addEventListener('resize', this.resizeEditor);
+        },
     methods: {
         async initializeEditor() {
             await new Promise(resolve => requestAnimationFrame(resolve));
@@ -95,8 +125,13 @@ window.editorApp = new Vue({
     }
 });
 
+})(); // Close the initEditor function
+
+// Global functions needed by other scripts
 function SetCode(code) {
-    codeEditor.setValue("export {};" + replaceImports(code));
+    if (typeof codeEditor !== 'undefined') {
+        codeEditor.setValue("export {};" + replaceImports(code));
+    }
 }
 function replaceImports(code)
 {

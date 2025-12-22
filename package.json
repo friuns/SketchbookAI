@@ -17,7 +17,6 @@
     "dev": "webpack-dev-server --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
     "prod": "rmdir /s /q c:\\temp\\dist && xcopy /E /I /Y . c:\\temp\\dist /EXCLUDE:.gitignore && xcopy /E /I /Y node_modules\\@types c:\\temp\\dist\\node_modules\\@types && wrangler pages deploy c:\\temp\\dist"
-
   },
   "repository": {
     "type": "git",
@@ -45,7 +44,6 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
-    
     "@isomorphic-git/lightning-fs": "^4.6.0",
     "@tweenjs/tween.js": "^25.0.0",
     "cannon-es": "^0.20.0",
@@ -53,9 +51,11 @@
     "isomorphic-git": "^1.27.1",
     "jquery": "^3.6.0",
     "lodash": "^4.17.21",
+    "monaco-editor": "^0.44.0",
     "peerjs": "^1.5.4",
     "sweetalert2": "^11.4.37",
     "three": "^0.152.0",
-    "three-csm": "^2.0.0"
+    "three-csm": "^2.0.0",
+    "vue": "^2.6.14"
   }
 }
