@@ -1,4 +1,6 @@
 const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: {
@@ -27,12 +29,53 @@ module.exports = {
         {
             test: /\.css$/,
             use: [
-                { loader: 'style-loader', options: { injectType: 'singletonStyleTag' } },
-                { loader: 'css-loader' },
+                MiniCssExtractPlugin.loader,
+                {
+                    loader: 'css-loader',
+                    options: {
+                        // Disable URL processing to avoid issues with relative paths
+                        // in imported CSS files (e.g., Font Awesome webfonts)
+                        url: false
+                    }
+                },
+                'postcss-loader'
             ]
         }
       ]
     },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: 'build/styles.min.css'
+        }),
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'node_modules/monaco-editor/min/vs',
+                    to: 'build/monaco/vs'
+                },
+                {
+                    from: 'node_modules/vue/dist/vue.js',
+                    to: 'build/vue.js'
+                },
+                {
+                    from: 'node_modules/peerjs/dist/peerjs.min.js',
+                    to: 'build/peerjs.min.js'
+                },
+                {
+                    from: 'node_modules/typescript/lib/typescript.js',
+                    to: 'build/typescript.js'
+                },
+                {
+                    from: 'node_modules/@fortawesome/fontawesome-free/webfonts',
+                    to: 'build/webfonts'
+                },
+                {
+                    from: 'node_modules/@tweenjs/tween.js/dist/tween.umd.js',
+                    to: 'build/tween.umd.js'
+                }
+            ]
+        })
+    ],
     performance: {
         hints: false
     }
