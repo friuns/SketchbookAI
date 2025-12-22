@@ -268,10 +268,15 @@ function createUIElement(type, style) {
 }
 
 
-import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference);
+import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference).catch(() => {
+    // HuggingFace import failed - HF models won't be available
+    console.warn('HuggingFace inference library not available');
+});
 
 async function GenerateResponse(prompt) {
-
+    if (!globalThis.HfInference) {
+        throw new Error('HuggingFace inference library is not available. This may be due to network issues, CDN restrictions, or import failures.');
+    }
     const hf = new HfInference(process.env.HUGGINGFACE_TOKEN || 'YOUR_HUGGINGFACE_TOKEN_HERE');
     const messages = [
         { role: 'user', content: prompt }

@@ -1,4 +1,7 @@
-import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference);
+import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference).catch(() => {
+    // HuggingFace import failed - HF models won't be available
+    console.warn('HuggingFace inference library not available');
+});
 
 globalThis.siteUrl = (globalThis.isLocal && false ? "http://localhost:3000/" : "https://api.gptcall.net/");
 globalThis.getChatGPTResponse = async function* ({messages,functions,model="grok-code",signal,apiUrl=siteUrl,apiKey=settings.apiKey}) {

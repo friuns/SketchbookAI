@@ -4,7 +4,12 @@ async function GenerateGLBFromPrompt(prompt) {
     return GenerateGLB(imageBlob);
 }
 async function GenerateImage(input) {
-    let HfInference = (await import('https://esm.sh/@huggingface/inference')).HfInference;
+    let HfInference;
+    try {
+        HfInference = (await import('https://esm.sh/@huggingface/inference')).HfInference;
+    } catch (e) {
+        throw new Error('HuggingFace inference library not available: ' + String(e));
+    }
     const prompt = input + ',Full-shot ,Full-length ,entire 3d model, object only, realism, Uncropped, stand alone, white background';
     const hf = new HfInference(process.env.HUGGINGFACE_TOKEN || 'YOUR_HUGGINGFACE_TOKEN_HERE');
 
