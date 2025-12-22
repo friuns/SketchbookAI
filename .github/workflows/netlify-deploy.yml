@@ -56,9 +56,13 @@ jobs:
         if: github.event_name == 'push'
         run: |
           COMMIT_MSG="${{ github.event.head_commit.message }}"
-          # Extract issue number from commit message (e.g., "fixes #123", "closes #456", "#789")
-          # Match keywords followed by #number OR standalone #number with word boundaries
-          ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve)\s+#([0-9]+)|^#([0-9]+)|[[:space:]]#([0-9]+)' | grep -oE '[0-9]+' | head -1)
+          # Extract issue number from commit message
+          # First try matching keywords followed by issue number (fixes #123, closes #456)
+          ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve)\s+#[0-9]+' | grep -oE '[0-9]+' | head -1)
+          # If not found, try matching standalone #number at start of message
+          if [ -z "$ISSUE_NUMBER" ]; then
+            ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oE '^#[0-9]+' | grep -oE '[0-9]+' | head -1)
+          fi
           if [ -n "$ISSUE_NUMBER" ]; then
             echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
             echo "Found issue number: $ISSUE_NUMBER"
@@ -85,10 +89,12 @@ jobs:
             WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
             # Create comment body with proper escaping
+            # Escape special characters in branch name for markdown
+            SAFE_BRANCH=$(echo "$BRANCH" | sed 's/`/\\`/g')
             {
               echo "🚀 **Netlify Deployment**"
               echo ""
-              echo "The branch \`${BRANCH}\` has been deployed to Netlify!"
+              echo "The branch \`${SAFE_BRANCH}\` has been deployed to Netlify!"
               echo ""
               echo "**🔗 Deployment URL:** ${DEPLOY_URL}"
               echo ""
