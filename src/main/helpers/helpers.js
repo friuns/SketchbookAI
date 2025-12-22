@@ -268,7 +268,10 @@ function createUIElement(type, style) {
 }
 
 
-import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference);
+import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => globalThis.HfInference = HfInference).catch(() => {
+    // HuggingFace import failed - HF models won't be available
+    console.warn('HuggingFace inference library not available');
+});
 
 async function GenerateResponse(prompt) {
 
