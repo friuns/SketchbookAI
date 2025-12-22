@@ -33,7 +33,9 @@ module.exports = {
                 {
                     loader: 'css-loader',
                     options: {
-                        url: false // Disable URL processing
+                        // Disable URL processing to avoid issues with relative paths
+                        // in imported CSS files (e.g., Font Awesome webfonts)
+                        url: false
                     }
                 },
                 'postcss-loader'

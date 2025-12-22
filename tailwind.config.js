@@ -10,6 +10,7 @@ module.exports = {
   },
   plugins: [require("daisyui")],
   corePlugins: {
+    // Disable preflight (CSS reset) to avoid conflicts with existing styles
     preflight: false,
   },
 }
