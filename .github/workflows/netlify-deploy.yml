@@ -4,10 +4,20 @@ on:
   push:
     branches:
       - '**'  # Triggers on push to any branch
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue or PR number to comment on (optional, will auto-detect PR or extract from commit message if not provided)'
+        required: false
+        type: string
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     
     steps:
       - name: Checkout
@@ -26,6 +36,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to Netlify
+        id: netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
           publish-dir: '.'
@@ -36,7 +47,88 @@ jobs:
           enable-commit-comment: true
           overwrites-pull-request-comment: true
         env:
-          NETLIFY_AUTH_TOKEN: nfp_7mrwfjfXpwtAA2yRS9Cdj52S5GLWuB8v6393
-          NETLIFY_SITE_ID: ef61ba0a-53d3-45ed-8965-4fcd861654ba
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 1
+
+      - name: Extract issue or PR number
+        id: extract_issue
+        if: github.event_name == 'push'
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          ISSUE_NUMBER=""
+          
+          # Check if there are any pull requests for this branch
+          if [ -n "${{ github.ref_name }}" ]; then
+            # Use gh to find PR for this branch
+            PR_NUM=$(gh pr list --head "${{ github.ref_name }}" --state open --json number --jq 'if length > 0 then .[0].number else "" end' 2>/dev/null || echo "")
+            if [ -n "$PR_NUM" ]; then
+              ISSUE_NUMBER="$PR_NUM"
+              echo "Found PR number for branch: $ISSUE_NUMBER"
+            fi
+          fi
+          
+          # If no PR found, try extracting from commit message
+          if [ -z "$ISSUE_NUMBER" ]; then
+            # Extract issue number from commit message
+            # First try matching keywords followed by issue number (fixes #123, closes #456)
+            ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve)\s+#[0-9]+' | grep -oE '[0-9]+' | head -1)
+            # If not found, try matching standalone #number at start of message
+            if [ -z "$ISSUE_NUMBER" ]; then
+              ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oE '^#[0-9]+' | grep -oE '[0-9]+' | head -1)
+            fi
+          fi
+          
+          if [ -n "$ISSUE_NUMBER" ]; then
+            echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+            echo "Final issue/PR number: $ISSUE_NUMBER"
+          else
+            echo "No issue/PR number found"
+            echo "issue_number=" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on issue or PR with deployment URL
+        if: |
+          (github.event_name == 'push' && steps.extract_issue.outputs.issue_number != '') ||
+          (github.event_name == 'workflow_dispatch' && inputs.issue_number != '')
+        run: |
+          # Use workflow input if provided, otherwise use extracted issue/PR number
+          ISSUE_NUM="${{ inputs.issue_number }}"
+          if [ -z "$ISSUE_NUM" ]; then
+            ISSUE_NUM="${{ steps.extract_issue.outputs.issue_number }}"
+          fi
+
+          if [ -n "$ISSUE_NUM" ]; then
+            DEPLOY_URL="${{ steps.netlify.outputs.deploy-url }}"
+            BRANCH="${{ github.ref_name }}"
+            COMMIT_SHA="${{ github.sha }}"
+            WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+            # Create comment body with proper escaping
+            # Escape special characters in branch name for markdown
+            SAFE_BRANCH=$(echo "$BRANCH" | sed 's/`/\\`/g')
+            {
+              echo "🚀 **Netlify Deployment**"
+              echo ""
+              echo "The branch \`${SAFE_BRANCH}\` has been deployed to Netlify!"
+              echo ""
+              echo "**🔗 Deployment URL:** ${DEPLOY_URL}"
+              echo ""
+              echo "Deployed from commit: ${COMMIT_SHA}"
+              echo "Workflow run: ${WORKFLOW_URL}"
+            } > /tmp/comment.md
+
+            # Post comment with error handling
+            if gh issue comment "$ISSUE_NUM" --body-file /tmp/comment.md; then
+              echo "✅ Posted deployment URL to issue/PR #$ISSUE_NUM"
+            else
+              echo "❌ Failed to post comment to issue/PR #$ISSUE_NUM"
+              echo "Please check if the issue/PR exists and you have the necessary permissions"
+              exit 1
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
