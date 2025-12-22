@@ -275,7 +275,7 @@ import('https://esm.sh/@huggingface/inference').then(({ HfInference }) => global
 
 async function GenerateResponse(prompt) {
     if (!globalThis.HfInference) {
-        throw new Error('HuggingFace inference library failed to load. Check network connectivity or use a different model provider.');
+        throw new Error('HuggingFace inference library is not available. This may be due to network issues, CDN restrictions, or import failures.');
     }
     const hf = new HfInference(process.env.HUGGINGFACE_TOKEN || 'YOUR_HUGGINGFACE_TOKEN_HERE');
     const messages = [
