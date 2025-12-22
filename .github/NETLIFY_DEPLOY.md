@@ -2,6 +2,18 @@
 
 This repository includes an automated Netlify deployment workflow that can post deployment URLs as comments on GitHub issues.
 
+## Prerequisites
+
+Before using this workflow, ensure the following secrets are configured in your repository settings:
+
+- `NETLIFY_AUTH_TOKEN`: Your Netlify authentication token
+- `NETLIFY_SITE_ID`: Your Netlify site ID
+
+To add these secrets:
+1. Go to your repository's Settings > Secrets and variables > Actions
+2. Click "New repository secret"
+3. Add both `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` with their respective values
+
 ## Features
 
 - **Automatic Deployment**: Every push to any branch triggers a Netlify deployment
