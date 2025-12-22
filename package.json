@@ -17,7 +17,6 @@
     "dev": "webpack-dev-server --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
     "prod": "rmdir /s /q c:\\temp\\dist && xcopy /E /I /Y . c:\\temp\\dist /EXCLUDE:.gitignore && xcopy /E /I /Y node_modules\\@types c:\\temp\\dist\\node_modules\\@types && wrangler pages deploy c:\\temp\\dist"
-
   },
   "repository": {
     "type": "git",
@@ -30,12 +29,24 @@
   },
   "homepage": "https://github.com/friuns2/Sketchbook",
   "devDependencies": {
+    "@fontsource/alfa-slab-one": "^5.2.8",
+    "@fontsource/cutive-mono": "^5.2.8",
+    "@fontsource/solway": "^5.2.8",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/dat.gui": "^0.7.13",
     "@types/jquery": "^3.5.5",
     "@types/lodash": "^4.14.168",
     "@types/three": "^0.144.0",
+    "autoprefixer": "^10.4.23",
+    "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^6.7.1",
+    "daisyui": "^5.5.14",
+    "mini-css-extract-plugin": "^2.9.4",
+    "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
+    "postcss-loader": "^8.2.0",
     "style-loader": "^3.3.1",
+    "tailwindcss": "^4.1.18",
     "ts-loader": "^9.4.1",
     "typescript": "^4.8.4",
     "webpack": "^5.74.0",
@@ -44,8 +55,8 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@google/generative-ai": "^0.17.1",
-    
     "@isomorphic-git/lightning-fs": "^4.6.0",
     "@tweenjs/tween.js": "^25.0.0",
     "cannon-es": "^0.20.0",
@@ -53,9 +64,11 @@
     "isomorphic-git": "^1.27.1",
     "jquery": "^3.6.0",
     "lodash": "^4.17.21",
+    "monaco-editor": "^0.55.1",
     "peerjs": "^1.5.4",
     "sweetalert2": "^11.4.37",
     "three": "^0.152.0",
-    "three-csm": "^2.0.0"
+    "three-csm": "^2.0.0",
+    "vue": "^2.6.14"
   }
 }

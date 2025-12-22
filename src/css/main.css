@@ -1,3 +1,13 @@
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+@import "@fontsource/alfa-slab-one";
+@import "@fontsource/solway/400.css";
+@import "@fontsource/solway/500.css";
+@import "@fontsource/solway/700.css";
+@import "@fontsource/cutive-mono";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import "modules/base.css";
 @import "modules/githubCorner.css";
 @import "modules/leftPanel.css";
