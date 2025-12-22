@@ -74,21 +74,27 @@ jobs:
           if [ -z "$ISSUE_NUM" ]; then
             ISSUE_NUM="${{ steps.extract_issue.outputs.issue_number }}"
           fi
-          
+
           if [ -n "$ISSUE_NUM" ]; then
             DEPLOY_URL="${{ steps.netlify.outputs.deploy-url }}"
             BRANCH="${{ github.ref_name }}"
-            
-            COMMENT_BODY="🚀 **Netlify Deployment**
 
-The branch \`$BRANCH\` has been deployed to Netlify!
+            cat > /tmp/comment.md << 'EOF'
+          🚀 **Netlify Deployment**
 
-**🔗 Deployment URL:** $DEPLOY_URL
+          The branch `$BRANCH` has been deployed to Netlify!
 
-Deployed from commit: ${{ github.sha }}
-Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            
-            gh issue comment "$ISSUE_NUM" --body "$COMMENT_BODY"
+          **🔗 Deployment URL:** $DEPLOY_URL
+
+          Deployed from commit: ${{ github.sha }}
+          Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+            # Replace variables in the comment
+            sed -i "s|\$BRANCH|$BRANCH|g" /tmp/comment.md
+            sed -i "s|\$DEPLOY_URL|$DEPLOY_URL|g" /tmp/comment.md
+
+            gh issue comment "$ISSUE_NUM" --body-file /tmp/comment.md
             echo "Posted deployment URL to issue #$ISSUE_NUM"
           fi
         env:
