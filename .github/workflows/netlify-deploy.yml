@@ -57,8 +57,8 @@ jobs:
         run: |
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           # Extract issue number from commit message (e.g., "fixes #123", "closes #456", "#789")
-          # Match keywords followed by #number OR standalone #number at word boundaries
-          ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve)\s*#([0-9]+)|#([0-9]+)' | grep -oE '[0-9]+' | head -1)
+          # Match keywords followed by #number OR standalone #number with word boundaries
+          ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve)\s+#([0-9]+)|^#([0-9]+)|[[:space:]]#([0-9]+)' | grep -oE '[0-9]+' | head -1)
           if [ -n "$ISSUE_NUMBER" ]; then
             echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
             echo "Found issue number: $ISSUE_NUMBER"
@@ -68,7 +68,9 @@ jobs:
           fi
 
       - name: Comment on issue with deployment URL
-        if: steps.extract_issue.outputs.issue_number != '' || inputs.issue_number != ''
+        if: |
+          (github.event_name == 'push' && steps.extract_issue.outputs.issue_number != '') ||
+          (github.event_name == 'workflow_dispatch' && inputs.issue_number != '')
         run: |
           # Use workflow input if provided, otherwise use extracted issue number
           ISSUE_NUM="${{ inputs.issue_number }}"
@@ -82,15 +84,26 @@ jobs:
             COMMIT_SHA="${{ github.sha }}"
             WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-            # Create comment body
-            printf "🚀 **Netlify Deployment**\n\n" > /tmp/comment.md
-            printf "The branch \`%s\` has been deployed to Netlify!\n\n" "$BRANCH" >> /tmp/comment.md
-            printf "**🔗 Deployment URL:** %s\n\n" "$DEPLOY_URL" >> /tmp/comment.md
-            printf "Deployed from commit: %s\n" "$COMMIT_SHA" >> /tmp/comment.md
-            printf "Workflow run: %s\n" "$WORKFLOW_URL" >> /tmp/comment.md
+            # Create comment body with proper escaping
+            {
+              echo "🚀 **Netlify Deployment**"
+              echo ""
+              echo "The branch \`${BRANCH}\` has been deployed to Netlify!"
+              echo ""
+              echo "**🔗 Deployment URL:** ${DEPLOY_URL}"
+              echo ""
+              echo "Deployed from commit: ${COMMIT_SHA}"
+              echo "Workflow run: ${WORKFLOW_URL}"
+            } > /tmp/comment.md
 
-            gh issue comment "$ISSUE_NUM" --body-file /tmp/comment.md
-            echo "Posted deployment URL to issue #$ISSUE_NUM"
+            # Post comment with error handling
+            if gh issue comment "$ISSUE_NUM" --body-file /tmp/comment.md; then
+              echo "✅ Posted deployment URL to issue #$ISSUE_NUM"
+            else
+              echo "❌ Failed to post comment to issue #$ISSUE_NUM"
+              echo "Please check if the issue exists and you have the necessary permissions"
+              exit 1
+            fi
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
