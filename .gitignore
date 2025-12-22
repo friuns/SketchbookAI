@@ -10,4 +10,7 @@ blend
 /src/examples/diffs/
 /src/main/examples/diffs/
 sketchbook.min.js
-/libs/
+/libs/vue.js
+/libs/monaco-editor/
+/libs/monaco-loader.js
+/libs/webfonts/
