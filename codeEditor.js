@@ -47,20 +47,12 @@ window.editorApp = new Vue({
         toggleTemplateMenu() {
             this.showTemplateMenu = !this.showTemplateMenu;
         },
-        async loadTemplate(templateName) {
-            try {
-                const response = await fetch(`src/main/examples/${templateName}`);
-                const code = await response.text();
-                SetCode(code);
-                this.showTemplateMenu = false;
-            } catch (error) {
-                console.error('Error loading template:', error);
-                alert('Error loading template: ' + templateName);
-            }
-        },
         async executeTemplate(templateName) {
             try {
                 const response = await fetch(`src/main/examples/${templateName}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 const code = await response.text();
                 SetCode(code);
                 this.showTemplateMenu = false;
@@ -70,7 +62,7 @@ window.editorApp = new Vue({
                 }, 100);
             } catch (error) {
                 console.error('Error executing template:', error);
-                alert('Error executing template: ' + templateName);
+                alert(`Error executing template "${templateName}": ${error.message}`);
             }
         },
         async initializeEditor() {
