@@ -4,10 +4,20 @@ on:
   push:
     branches:
       - '**'  # Triggers on push to any branch
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to comment on (optional, will try to extract from commit message if not provided)'
+        required: false
+        type: string
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     
     steps:
       - name: Checkout
@@ -26,6 +36,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to Netlify
+        id: netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
           publish-dir: '.'
@@ -39,4 +50,47 @@ jobs:
           NETLIFY_AUTH_TOKEN: nfp_7mrwfjfXpwtAA2yRS9Cdj52S5GLWuB8v6393
           NETLIFY_SITE_ID: ef61ba0a-53d3-45ed-8965-4fcd861654ba
         timeout-minutes: 1
+
+      - name: Extract issue number from commit message
+        id: extract_issue
+        if: github.event_name == 'push'
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          # Extract issue number from commit message (e.g., "fixes #123", "closes #456", "#789")
+          ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve|#)\s*#?([0-9]+)' | grep -oE '[0-9]+' | head -1)
+          if [ -n "$ISSUE_NUMBER" ]; then
+            echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+            echo "Found issue number: $ISSUE_NUMBER"
+          else
+            echo "No issue number found in commit message"
+            echo "issue_number=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on issue with deployment URL
+        if: steps.extract_issue.outputs.issue_number != '' || inputs.issue_number != ''
+        run: |
+          # Use workflow input if provided, otherwise use extracted issue number
+          ISSUE_NUM="${{ inputs.issue_number }}"
+          if [ -z "$ISSUE_NUM" ]; then
+            ISSUE_NUM="${{ steps.extract_issue.outputs.issue_number }}"
+          fi
+          
+          if [ -n "$ISSUE_NUM" ]; then
+            DEPLOY_URL="${{ steps.netlify.outputs.deploy-url }}"
+            BRANCH="${{ github.ref_name }}"
+            
+            COMMENT_BODY="🚀 **Netlify Deployment**
+
+The branch \`$BRANCH\` has been deployed to Netlify!
+
+**🔗 Deployment URL:** $DEPLOY_URL
+
+Deployed from commit: ${{ github.sha }}
+Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            
+            gh issue comment "$ISSUE_NUM" --body "$COMMENT_BODY"
+            echo "Posted deployment URL to issue #$ISSUE_NUM"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
