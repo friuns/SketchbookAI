@@ -7,7 +7,7 @@
                 paths: {
                     vs: window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') 
                         ? 'libs/monaco-editor/min/vs'
-                        : 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.51.0/min/vs',
+                        : 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs',
                 }
             });
             return true;
