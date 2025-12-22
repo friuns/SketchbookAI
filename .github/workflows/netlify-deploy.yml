@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to comment on (optional, will try to extract from commit message if not provided)'
+        description: 'Issue or PR number to comment on (optional, will auto-detect PR or extract from commit message if not provided)'
         required: false
         type: string
 
@@ -51,32 +51,54 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 1
 
-      - name: Extract issue number from commit message
+      - name: Extract issue or PR number
         id: extract_issue
         if: github.event_name == 'push'
         run: |
           COMMIT_MSG="${{ github.event.head_commit.message }}"
-          # Extract issue number from commit message
-          # First try matching keywords followed by issue number (fixes #123, closes #456)
-          ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve)\s+#[0-9]+' | grep -oE '[0-9]+' | head -1)
-          # If not found, try matching standalone #number at start of message
-          if [ -z "$ISSUE_NUMBER" ]; then
-            ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oE '^#[0-9]+' | grep -oE '[0-9]+' | head -1)
+          ISSUE_NUMBER=""
+          
+          # First try to get PR number if this push is associated with a PR
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            ISSUE_NUMBER="${{ github.event.pull_request.number }}"
+            echo "Found PR number: $ISSUE_NUMBER"
+          # Check if there are any pull requests for this branch
+          elif [ -n "${{ github.ref_name }}" ]; then
+            # Use gh to find PR for this branch
+            PR_NUM=$(gh pr list --head "${{ github.ref_name }}" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+            if [ -n "$PR_NUM" ]; then
+              ISSUE_NUMBER="$PR_NUM"
+              echo "Found PR number for branch: $ISSUE_NUMBER"
+            fi
           fi
+          
+          # If no PR found, try extracting from commit message
+          if [ -z "$ISSUE_NUMBER" ]; then
+            # Extract issue number from commit message
+            # First try matching keywords followed by issue number (fixes #123, closes #456)
+            ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oiE '(fixes|closes|resolves|fix|close|resolve)\s+#[0-9]+' | grep -oE '[0-9]+' | head -1)
+            # If not found, try matching standalone #number at start of message
+            if [ -z "$ISSUE_NUMBER" ]; then
+              ISSUE_NUMBER=$(echo "$COMMIT_MSG" | grep -oE '^#[0-9]+' | grep -oE '[0-9]+' | head -1)
+            fi
+          fi
+          
           if [ -n "$ISSUE_NUMBER" ]; then
             echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
-            echo "Found issue number: $ISSUE_NUMBER"
+            echo "Final issue/PR number: $ISSUE_NUMBER"
           else
-            echo "No issue number found in commit message"
+            echo "No issue/PR number found"
             echo "issue_number=" >> $GITHUB_OUTPUT
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Comment on issue with deployment URL
+      - name: Comment on issue or PR with deployment URL
         if: |
           (github.event_name == 'push' && steps.extract_issue.outputs.issue_number != '') ||
           (github.event_name == 'workflow_dispatch' && inputs.issue_number != '')
         run: |
-          # Use workflow input if provided, otherwise use extracted issue number
+          # Use workflow input if provided, otherwise use extracted issue/PR number
           ISSUE_NUM="${{ inputs.issue_number }}"
           if [ -z "$ISSUE_NUM" ]; then
             ISSUE_NUM="${{ steps.extract_issue.outputs.issue_number }}"
@@ -104,10 +126,10 @@ jobs:
 
             # Post comment with error handling
             if gh issue comment "$ISSUE_NUM" --body-file /tmp/comment.md; then
-              echo "✅ Posted deployment URL to issue #$ISSUE_NUM"
+              echo "✅ Posted deployment URL to issue/PR #$ISSUE_NUM"
             else
-              echo "❌ Failed to post comment to issue #$ISSUE_NUM"
-              echo "Please check if the issue exists and you have the necessary permissions"
+              echo "❌ Failed to post comment to issue/PR #$ISSUE_NUM"
+              echo "Please check if the issue/PR exists and you have the necessary permissions"
               exit 1
             fi
           fi

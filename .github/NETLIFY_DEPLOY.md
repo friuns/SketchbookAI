@@ -1,6 +1,6 @@
-# Netlify Deployment with GitHub Issue Comments
+# Netlify Deployment with GitHub Issue/PR Comments
 
-This repository includes an automated Netlify deployment workflow that can post deployment URLs as comments on GitHub issues.
+This repository includes an automated Netlify deployment workflow that can post deployment URLs as comments on GitHub issues and pull requests.
 
 ## Prerequisites
 
@@ -17,14 +17,31 @@ To add these secrets:
 ## Features
 
 - **Automatic Deployment**: Every push to any branch triggers a Netlify deployment
-- **Issue Commenting**: The workflow can automatically comment on GitHub issues with the deployment URL
+- **Automatic PR Comments**: When pushing to a branch with an open PR, the deployment URL is automatically posted to that PR
+- **Issue Commenting**: The workflow can also comment on GitHub issues when referenced in commit messages
 - **Multiple Triggering Options**:
-  1. Extract issue number from commit message
-  2. Manually trigger with a specific issue number
+  1. Automatic: Push to a PR branch (comments on the PR)
+  2. Automatic: Reference an issue in commit message (comments on the issue)
+  3. Manual: Trigger workflow with a specific issue/PR number
 
 ## Usage
 
-### Option 1: Automatic via Commit Message
+### Option 1: Automatic PR Comments (Recommended)
+
+When you push commits to a branch that has an open pull request, the workflow will automatically post the Netlify deployment URL as a comment on that PR.
+
+```bash
+# Create a PR for your branch
+git checkout -b my-feature
+git push origin my-feature
+# Open a PR on GitHub
+
+# Push more commits - deployment URLs will be posted to the PR
+git commit -m "Add feature"
+git push
+```
+
+### Option 2: Automatic via Commit Message
 
 Include an issue reference in your commit message using any of these formats:
 
@@ -37,19 +54,19 @@ git commit -m "#999: Quick fix"
 
 When you push this commit, the Netlify deployment URL will automatically be posted as a comment on the referenced issue.
 
-### Option 2: Manual Workflow Dispatch
+### Option 3: Manual Workflow Dispatch
 
-You can manually trigger the deployment workflow with a specific issue number:
+You can manually trigger the deployment workflow with a specific issue or PR number:
 
 1. Go to the **Actions** tab in the GitHub repository
 2. Select the **Deploy to Netlify** workflow
 3. Click **Run workflow**
-4. Enter the issue number you want to comment on
+4. Enter the issue or PR number you want to comment on
 5. Click **Run workflow**
 
 ## Comment Format
 
-The workflow posts a comment to the issue with the following information:
+The workflow posts a comment to the issue or PR with the following information:
 
 ```markdown
 🚀 **Netlify Deployment**
