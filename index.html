@@ -159,6 +159,39 @@ input::-ms-reveal {
         margin-left: 10px;
         flex-grow: 1;
     }
+    #editorMenuBar .templates-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    #editorMenuBar .templates-dropdown .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #2d2d2d;
+        min-width: 200px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1001;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    #editorMenuBar .templates-dropdown .dropdown-content a {
+        color: #cccccc;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        cursor: pointer;
+    }
+    #editorMenuBar .templates-dropdown .dropdown-content a:hover {
+        background-color: #3c3c3c;
+    }
+    #editorMenuBar .templates-dropdown:hover .dropdown-content {
+        display: block;
+    }
+    #editorMenuBar .templates-dropdown button {
+        background-color: #2d2d2d;
+    }
+    #editorMenuBar .templates-dropdown:hover button {
+        background-color: #3c3c3c;
+    }
 </style>
 <body class="relative bg-gray-100" >
     <div id="app" tabindex="-1" style="outline: none;" @keydown="event => { if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName)) event.preventDefault(); }">
@@ -253,6 +286,15 @@ input::-ms-reveal {
                     <i class="fas fa-play"></i>
                     <span>Run</span>
                 </button>
+                <div class="templates-dropdown">
+                    <button title="Load Template">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Templates</span>
+                    </button>
+                    <div class="dropdown-content" id="templatesMenu">
+                        <!-- Templates will be populated here -->
+                    </div>
+                </div>
                 <button @click="toggleEditor" class="quit-btn" title="Close Editor">
                     <i class="fas fa-times"></i>
                     <span>Quit</span>

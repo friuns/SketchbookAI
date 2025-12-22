@@ -13,10 +13,53 @@ window.editorApp = new Vue({
     },
     mounted() {
         this.initializeEditor();
+        this.populateTemplatesMenu();
         // Add event listener for window resize
         window.addEventListener('resize', this.resizeEditor);
     },
     methods: {
+        async populateTemplatesMenu() {
+            const templatesMenu = document.getElementById('templatesMenu');
+            if (!templatesMenu) return;
+
+            // List of template files from src/main/examples
+            const templates = [
+                '2player.ts',
+                'carBazooka.ts',
+                'carExample.ts',
+                'codeTemplate.ts',
+                'dialog.ts',
+                'football.ts',
+                'minecraft.ts',
+                'module.ts',
+                'npcs.ts',
+                'pistol.ts',
+                'rocketLauncher.ts',
+                'rootmotion.ts',
+                'trees.ts'
+            ];
+
+            templates.forEach(template => {
+                const link = document.createElement('a');
+                const templateName = template.replace('.ts', '');
+                link.textContent = templateName;
+                link.onclick = () => this.loadTemplate(template);
+                templatesMenu.appendChild(link);
+            });
+        },
+        async loadTemplate(templateFile) {
+            try {
+                const response = await fetch(`src/main/examples/${templateFile}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to load template: ${templateFile}`);
+                }
+                const code = await response.text();
+                SetCode(code);
+            } catch (error) {
+                console.error('Error loading template:', error);
+                alert(`Failed to load template: ${templateFile}`);
+            }
+        },
         async initializeEditor() {
             await new Promise(resolve => requestAnimationFrame(resolve));
             require(['vs/editor/editor.main'], async  ()=> {
