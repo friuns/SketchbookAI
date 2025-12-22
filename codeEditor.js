@@ -10,13 +10,69 @@ window.editorApp = new Vue({
     el: '#editorApp',
     data: {
         showEditor: true,
+        showTemplateMenu: false,
+        templates: [],
     },
     mounted() {
         this.initializeEditor();
+        this.loadTemplatesList();
         // Add event listener for window resize
         window.addEventListener('resize', this.resizeEditor);
+        // Add event listener to close template menu when clicking outside
+        document.addEventListener('click', this.handleClickOutside);
+    },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.resizeEditor);
+        document.removeEventListener('click', this.handleClickOutside);
     },
     methods: {
+        async loadTemplatesList() {
+            // List of template files in src/main/examples
+            this.templates = [
+                '2player.ts',
+                'carBazooka.ts',
+                'carExample.ts',
+                'codeTemplate.ts',
+                'dialog.ts',
+                'football.ts',
+                'minecraft.ts',
+                'module.ts',
+                'npcs.ts',
+                'pistol.ts',
+                'rocketLauncher.ts',
+                'rootmotion.ts',
+                'trees.ts'
+            ];
+        },
+        toggleTemplateMenu() {
+            this.showTemplateMenu = !this.showTemplateMenu;
+        },
+        async loadTemplate(templateName) {
+            try {
+                const response = await fetch(`src/main/examples/${templateName}`);
+                const code = await response.text();
+                SetCode(code);
+                this.showTemplateMenu = false;
+            } catch (error) {
+                console.error('Error loading template:', error);
+                alert('Error loading template: ' + templateName);
+            }
+        },
+        async executeTemplate(templateName) {
+            try {
+                const response = await fetch(`src/main/examples/${templateName}`);
+                const code = await response.text();
+                SetCode(code);
+                this.showTemplateMenu = false;
+                // Execute the code immediately
+                setTimeout(() => {
+                    this.runCode();
+                }, 100);
+            } catch (error) {
+                console.error('Error executing template:', error);
+                alert('Error executing template: ' + templateName);
+            }
+        },
         async initializeEditor() {
             await new Promise(resolve => requestAnimationFrame(resolve));
             require(['vs/editor/editor.main'], async  ()=> {
@@ -90,6 +146,12 @@ window.editorApp = new Vue({
         resizeEditor() {
             if (codeEditor && this.showEditor) {
                 codeEditor.layout();
+            }
+        },
+        handleClickOutside(event) {
+            const templateContainer = event.target.closest('.template-menu-container');
+            if (!templateContainer && this.showTemplateMenu) {
+                this.showTemplateMenu = false;
             }
         },
     }

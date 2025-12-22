@@ -159,6 +159,38 @@ input::-ms-reveal {
         margin-left: 10px;
         flex-grow: 1;
     }
+    /* Template menu dropdown styles */
+    .template-menu-container {
+        position: relative;
+    }
+    .template-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 5px;
+        background-color: #252526;
+        border: 1px solid #3c3c3c;
+        border-radius: 4px;
+        min-width: 200px;
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        z-index: 1001;
+    }
+    .template-dropdown-item {
+        padding: 8px 16px;
+        color: #cccccc;
+        cursor: pointer;
+        font-size: 13px;
+        border-bottom: 1px solid #3c3c3c;
+        transition: background-color 0.2s;
+    }
+    .template-dropdown-item:last-child {
+        border-bottom: none;
+    }
+    .template-dropdown-item:hover {
+        background-color: #37373d;
+    }
 </style>
 <body class="relative bg-gray-100" >
     <div id="app" tabindex="-1" style="outline: none;" @keydown="event => { if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName)) event.preventDefault(); }">
@@ -253,6 +285,22 @@ input::-ms-reveal {
                     <i class="fas fa-play"></i>
                     <span>Run</span>
                 </button>
+                <div class="template-menu-container">
+                    <button @click="toggleTemplateMenu" title="Load Template">
+                        <i class="fas fa-file-code"></i>
+                        <span>Templates</span>
+                        <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                    </button>
+                    <div v-if="showTemplateMenu" class="template-dropdown">
+                        <div 
+                            v-for="template in templates" 
+                            :key="template"
+                            class="template-dropdown-item"
+                            @click="executeTemplate(template)">
+                            {{ template.replace('.ts', '') }}
+                        </div>
+                    </div>
+                </div>
                 <button @click="toggleEditor" class="quit-btn" title="Close Editor">
                     <i class="fas fa-times"></i>
                     <span>Quit</span>
